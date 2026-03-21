@@ -10,6 +10,10 @@
       <p class="subtitle mb-6">{{ $t('auth.login.subtitle') }}</p>
       
       <form @submit.prevent="handleLogin" class="space-y-4">
+        <div v-if="errors.general" class="p-3 bg-red-50 border border-red-200 rounded-xl">
+          <p class="text-red-600 text-sm">{{ errors.general }}</p>
+        </div>
+        
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
             {{ $t('auth.login.email') }}
@@ -40,9 +44,10 @@
         
         <button
           type="submit"
-          class="w-full py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold text-lg rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+          :disabled="isLoading"
+          class="w-full py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold text-lg rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ $t('auth.login.submit') }}
+          {{ isLoading ? 'Loading...' : $t('auth.login.submit') }}
         </button>
       </form>
       
@@ -64,6 +69,7 @@
 
 <script setup lang="ts">
 import Modal from './Modal.vue'
+import { useAuthStore } from '~/stores/auth'
 
 interface Props {
   modelValue: boolean
@@ -77,17 +83,22 @@ const emit = defineEmits<{
   (e: 'switchToRegister'): void
 }>()
 
+const authStore = useAuthStore()
+
 const email = ref('')
 const password = ref('')
 const errors = ref({
   email: '',
-  password: ''
+  password: '',
+  general: ''
 })
+const isLoading = ref(false)
 
 const close = () => {
   email.value = ''
   password.value = ''
-  errors.value = { email: '', password: '' }
+  errors.value = { email: '', password: '', general: '' }
+  isLoading.value = false
   emit('update:modelValue', false)
 }
 
@@ -118,11 +129,22 @@ const validate = () => {
   return isValid
 }
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (!validate()) return
   
-  emit('success')
-  close()
+  isLoading.value = true
+  errors.value.general = ''
+  
+  const result = await authStore.login(email.value, password.value)
+  
+  isLoading.value = false
+  
+  if (result.success) {
+    emit('success')
+    close()
+  } else {
+    errors.value.general = result.error || 'Login failed'
+  }
 }
 </script>
 

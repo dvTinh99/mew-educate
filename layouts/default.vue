@@ -26,64 +26,58 @@
             <template v-if="authStore.isLoggedIn">
               <NuxtLink 
                 to="/leaderboard" 
-                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors hidden md:block"
                 :title="'Leaderboard'"
               >
                 <span class="text-lg">🏆</span>
-                <!-- <span class="hidden lg:inline text-sm font-medium text-gray-600 ml-1">Leaderboard</span> -->
               </NuxtLink>
               
               <NuxtLink 
                 to="/pet" 
-                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors hidden md:block"
                 :title="'My Pet'"
               >
                 <span class="text-lg">🐱</span>
-                <!-- <span class="hidden lg:inline text-sm font-medium text-gray-600 ml-1">My Pet</span> -->
               </NuxtLink>
               
               <NuxtLink 
                 to="/stats" 
-                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors hidden md:block"
                 :title="'Profile'"
               >
                 <span class="hidden sm:inline text-lg">👤</span>
                 <svg class="sm:hidden w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <!-- <span class="hidden sm:inline text-sm font-medium text-gray-600">Profile</span> -->
               </NuxtLink>
               
               <NuxtLink 
                 to="/profile" 
-                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors hidden md:block"
                 :title="'My Decks'"
               >
                 <span class="hidden sm:inline text-lg">📚</span>
                 <svg class="sm:hidden w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
-                <!-- <span class="hidden sm:inline text-sm font-medium text-gray-600">My Decks</span> -->
               </NuxtLink>
               
               <NuxtLink 
                 to="/settings" 
-                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors hidden lg:block"
                 :title="'Settings'"
               >
                 <span class="text-lg">⚙️</span>
-                <!-- <span class="hidden lg:inline text-sm font-medium text-gray-600 ml-1">Settings</span> -->
               </NuxtLink>
               
               <button 
-                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                class="p-2 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors hidden lg:block"
                 :title="'Logout'"
                 @click="handleLogout"
               >
                 <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                <!-- <span class="hidden lg:inline text-sm font-medium text-gray-600 ml-1">Logout</span> -->
               </button>
             </template>
             
@@ -100,11 +94,13 @@
       </div>
     </header>
 
-    <main class="app-main flex-1">
+    <main class="app-main flex-1 pb-16 md:pb-0">
       <slot />
     </main>
 
-    <footer class="app-footer bg-white border-t-2 border-gray-200 py-4 sm:py-6 mt-auto">
+    <MobileNavbar />
+
+    <footer class="app-footer bg-white border-t-2 border-gray-200 py-4 sm:py-6 mt-auto hidden md:block">
       <div class="container mx-auto px-4 text-center">
         <p class="text-gray-500 text-sm sm:text-base">
           Built with care for effective learning
@@ -119,6 +115,7 @@ import { useDeckStore } from '~/stores/deck'
 import { usePetStore } from '~/stores/pet'
 import { useAuthStore } from '~/stores/auth'
 import { useRouter } from 'vue-router'
+import MobileNavbar from '~/components/MobileNavbar.vue'
 
 const deckStore = useDeckStore()
 const petStore = usePetStore()

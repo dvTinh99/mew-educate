@@ -1,41 +1,129 @@
 import { defineStore } from 'pinia'
 
+interface User {
+  id: string
+  email: string
+  name: string
+  createdAt?: string
+}
+
+interface AuthResponse {
+  user: User
+  token: string
+}
+
+async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw { statusCode: response.status, data: errorData }
+  }
+  
+  return response.json()
+}
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     isLoggedIn: false,
-    user: null as { name: string; email: string } | null
+    user: null as User | null,
+    token: null as string | null,
   }),
 
   actions: {
-    login(email: string, _password: string) {
-      this.isLoggedIn = true
-      this.user = {
-        name: email.split('@')[0],
-        email: email
+    async login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+      try {
+        const response = await apiFetch<AuthResponse>('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        })
+
+        this.isLoggedIn = true
+        this.user = response.user
+        this.token = response.token
+        this.saveToStorage()
+        return { success: true }
+      } catch (error: any) {
+        console.error('Login error:', error)
+        return {
+          success: false,
+          error: error.data?.message || 'Login failed'
+        }
       }
-      this.saveToStorage()
     },
 
-    register(name: string, email: string, _password: string) {
-      this.isLoggedIn = true
-      this.user = {
-        name: name,
-        email: email
+    async register(name: string, email: string, password: string): Promise<{ success: boolean; error?: string }> {
+      try {
+        const response = await apiFetch<AuthResponse>('/api/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({ name, email, password }),
+        })
+
+        this.isLoggedIn = true
+        this.user = response.user
+        this.token = response.token
+        this.saveToStorage()
+        return { success: true }
+      } catch (error: any) {
+        console.error('Register error:', error)
+        return {
+          success: false,
+          error: error.data?.message || 'Registration failed'
+        }
       }
-      this.saveToStorage()
     },
 
-    logout() {
+    async logout(): Promise<void> {
+      try {
+        await apiFetch('/api/auth/logout', { method: 'POST' })
+      } catch (error) {
+        console.error('Logout error:', error)
+      }
+
       this.isLoggedIn = false
       this.user = null
+      this.token = null
       this.saveToStorage()
+    },
+
+    async checkAuth(): Promise<boolean> {
+      if (typeof window === 'undefined') return false
+
+      const saved = localStorage.getItem('auth-store')
+      if (!saved) return false
+
+      try {
+        const parsed = JSON.parse(saved)
+        if (!parsed.isLoggedIn || !parsed.token) return false
+
+        this.token = parsed.token
+        this.isLoggedIn = true
+
+        const response = await apiFetch<{ user: User }>('/api/auth/me')
+        this.user = response.user
+        return true
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        this.isLoggedIn = false
+        this.user = null
+        this.token = null
+        this.saveToStorage()
+        return false
+      }
     },
 
     saveToStorage() {
       if (typeof window !== 'undefined') {
         const data = {
           isLoggedIn: this.isLoggedIn,
-          user: this.user
+          user: this.user,
+          token: this.token
         }
         localStorage.setItem('auth-store', JSON.stringify(data))
       }
@@ -49,6 +137,7 @@ export const useAuthStore = defineStore('auth', {
             const parsed = JSON.parse(saved)
             this.isLoggedIn = parsed.isLoggedIn || false
             this.user = parsed.user || null
+            this.token = parsed.token || null
           } catch (e) {
             console.error('Failed to load auth store:', e)
           }

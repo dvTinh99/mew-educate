@@ -56,10 +56,10 @@
             <p class="text-[10px] md:text-sm text-gray-500">Lv. {{ pet.level }} • {{ pet.power }} ⚔️</p>
           </div>
           
-          <div class="text-right flex-shrink-0 hidden xs:block">
+          <!-- <div class="text-right flex-shrink-0 hidden xs:block">
             <p class="text-xs md:text-sm font-medium text-gray-700">{{ pet.evolutionStageNames[pet.evolutionStage - 1] }}</p>
             <p class="text-[10px] md:text-xs text-gray-500">{{ pet.winRate }}% Win</p>
-          </div>
+          </div> -->
         </div>
       </div>
 

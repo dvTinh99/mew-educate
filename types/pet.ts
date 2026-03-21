@@ -24,6 +24,20 @@ export interface Pet {
   feedingStreak: number
   createdAt: Date
   likes: number
+  customization?: PetCustomization
+}
+
+export interface PetCustomization {
+  color: string
+  accentColor: string
+  accessories: PetAccessories
+}
+
+export interface PetAccessories {
+  hat?: string
+  collar?: string
+  bow?: string
+  glasses?: string
 }
 
 export interface PetLeaderboardEntry {

@@ -102,16 +102,32 @@
             </div>
 
             <div class="flex flex-col md:flex-row items-center gap-8">
-              <PetDisplay
-                :name="pet.name"
-                :level="pet.level"
-                :stage="pet.evolutionStage"
-                :show-name="false"
-                :show-level="true"
-                :show-stage="true"
-                size="200"
-                :animate="true"
-              />
+              <div class="relative">
+                <PetDisplay
+                  :name="pet.name"
+                  :level="pet.level"
+                  :evolution-stage="pet.evolutionStage"
+                  :pet-color="pet.customization?.color || '#FF9F43'"
+                  :pet-accent="pet.customization?.accentColor || '#FFEAA7'"
+                  :accessories="pet.customization?.accessories || {}"
+                  :show-name="false"
+                  :show-level-badge="true"
+                  :show-mood-indicator="true"
+                  :mood="currentMood"
+                  size="lg"
+                  :animated="true"
+                />
+                <button
+                  class="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition-colors"
+                  @click="showCustomizeModal = true"
+                  title="Customize Pet"
+                >
+                  <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              </div>
               
               <div class="flex-1 space-y-6">
                 <div class="xp-section">
@@ -254,6 +270,17 @@
         :new-stage="evolutionNewStage"
         @close="showEvolutionModal = false"
       />
+
+      <CustomizePetModal
+        v-model="showCustomizeModal"
+        :pet-name="pet?.name ?? 'Pet'"
+        :pet-level="pet?.level ?? 1"
+        :evolution-stage="pet?.evolutionStage ?? 1"
+        :initial-color="pet?.customization?.color"
+        :initial-accent="pet?.customization?.accentColor"
+        :initial-accessories="pet?.customization?.accessories"
+        @save="handleCustomizationSave"
+      />
     </div>
   </div>
 </template>
@@ -262,13 +289,13 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePetStore } from '~/stores/pet'
-import { getXPForNextLevel } from '~/types/pet'
-import type { EvolutionStage } from '~/types/pet'
+import { getXPForNextLevel, type EvolutionStage, type PetCustomization } from '~/types/pet'
 import PetDisplay from '~/components/PetDisplay.vue'
 import PetStats from '~/components/PetStats.vue'
 import FoodInventory from '~/components/FoodInventory.vue'
 import FeedPetModal from '~/components/FeedPetModal.vue'
 import EvolutionModal from '~/components/EvolutionModal.vue'
+import CustomizePetModal from '~/components/CustomizePetModal.vue'
 import AppButton from '~/components/AppButton.vue'
 import PetLeaderboardMini from '~/components/PetLeaderboardMini.vue'
 
@@ -277,12 +304,24 @@ const petStore = usePetStore()
 
 const showFeedModal = ref(false)
 const showEvolutionModal = ref(false)
+const showCustomizeModal = ref(false)
 const evolutionOldStage = ref<EvolutionStage>(1)
 const evolutionNewStage = ref<EvolutionStage>(1)
 const isRenaming = ref(false)
 const newPetName = ref('')
-const nameInputRef = ref<HTMLInputElement | null>(null)
+
 const pet = computed(() => petStore.pet)
+const currentMood = computed(() => {
+  if (!pet.value) return 'normal'
+  const hoursSinceFed = pet.value.lastFed 
+    ? (Date.now() - new Date(pet.value.lastFed).getTime()) / (1000 * 60 * 60) 
+    : 999
+  if (hoursSinceFed > 48) return 'sad'
+  if (hoursSinceFed > 24) return 'hungry'
+  if (pet.value.feedingStreak >= 3) return 'happy'
+  return 'normal'
+})
+const nameInputRef = ref<HTMLInputElement | null>(null)
 
 const xpRequired = computed(() => {
   return getXPForNextLevel(pet.value?.level ?? 1)
@@ -333,6 +372,13 @@ const handleFed = (result: { leveled: boolean; evolved: boolean }) => {
     petStore.hasSeenEvolution = true
     showEvolutionModal.value = true
   }
+}
+
+const handleCustomizationSave = (customization: { color: string; accent: string; accessories: any }) => {
+  if (pet.value) {
+    petStore.updatePetCustomization(customization)
+  }
+  petStore.saveToStorage()
 }
 
 onMounted(() => {

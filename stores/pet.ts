@@ -257,6 +257,17 @@ export const usePetStore = defineStore('pet', {
       return newPet
     },
 
+    updatePetCustomization(customization: { color: string; accent: string; accessories: any }) {
+      if (!this.pet) return
+      
+      this.pet.customization = {
+        color: customization.color,
+        accentColor: customization.accent,
+        accessories: customization.accessories
+      }
+      this.saveToStorage()
+    },
+
     feedPet(foodType: FoodType) {
       if (!this.pet) return null
       if (this.foodInventory[foodType] <= 0) return null

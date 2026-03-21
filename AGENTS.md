@@ -9,6 +9,7 @@ This document provides guidance for AI agents working in this repository.
 - **Styling**: TailwindCSS with custom component classes
 - **State Management**: Pinia
 - **Module Type**: ESM
+- **Database**: Neon PostgreSQL with Drizzle ORM (server-side only)
 
 ## Build Commands
 
@@ -197,6 +198,10 @@ composables/           # Reusable composition functions (useLocalStorage, useStu
 i18n/locales/          # i18n translation files (en.json, vi.json, zh.json)
 layouts/               # Page layouts (default.vue, landing.vue)
 pages/                 # Route pages (index, profile, stats, onboarding, pet, battle, deck/[id], study/[id], exam/[id])
+server/
+  ├── api/             # API routes (auth, pets, decks, leaderboard)
+  ├── db/              # Drizzle schema and connection
+  └── utils/           # Server utilities (auth helpers)
 stores/                # Pinia stores (deck.ts, pet.ts, auth.ts)
 types/                 # TypeScript types (deck.ts, exam.ts, gamification.ts, pet.ts)
 public/data/           # Pre-built deck JSON files (hskDecks.json, toeicDecks.json, generalDecks.json)
@@ -205,11 +210,313 @@ nuxt.config.ts         # Nuxt configuration
 tailwind.config.js     # Tailwind configuration
 ```
 
+## Database Schema (Neon PostgreSQL + Drizzle ORM)
+
+### Key Schema Notes
+
+- **`users.id`**: Uses `integer` type in the database (NOT UUID). Manual ID generation required.
+- **Foreign keys**: Related tables (`user_stats`, `food_inventory`, `leaderboard`, `pets`, `decks`, etc.) use `text` type for `user_id` to match users.id.
+- **Primary keys**: Use `uuidv4()` to generate UUIDs (Drizzle `defaultRandom()` not available on primaryKey).
+- **Neon results**: SQL results returned in `.rows` array, not direct array access.
+
+### Schema Files
+
+- `server/db/schema.ts` - All Drizzle table definitions
+- `server/db/index.ts` - Database connection using `drizzle-orm/neon-http`
+
+### Database Tables
+
+| Table | Key Fields | Notes |
+|-------|------------|-------|
+| users | id (int), email, password, name | Manual ID generation |
+| user_stats | user_id (text), totalXP, level, streak | Foreign key as text |
+| food_inventory | user_id (text), basic, premium, rare | |
+| pets | user_id (text), name, species, level, stats | |
+| decks | user_id (text), name, cards[] | |
+| leaderboard | user_id (text), pet stats | |
+| daily_challenges | user_id (text), challenge_id, progress | |
+| battle_history | user_id (text), opponent, result | |
+
+## Backend API
+
+All API routes are in `server/api/` using Nuxt server routes.
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user (manual ID) |
+| POST | `/api/auth/login` | Email/password login |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Get current user + stats |
+
+### Pets
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/pets` | Get user's pet |
+| POST | `/api/pets/create` | Create pet with UUID |
+| PUT | `/api/pets/feed` | Feed pet, update stats/XP |
+
+### Decks
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/decks` | List user's decks |
+| POST | `/api/decks` | Create new deck |
+| GET | `/api/decks/:id` | Get deck with cards |
+
+### Leaderboard
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/leaderboard` | Get leaderboard (with AI simulation) |
+
+## Mobile Navigation
+
+### MobileNavbar Component
+
+Fixed bottom navigation bar for mobile users (`components/MobileNavbar.vue`).
+
+**Features:**
+- Fixed position at bottom of screen
+- 5 navigation items: Home, Decks, Study, Pet, Profile
+- Active state indicator (highlighted icon)
+- Mobile-first responsive design (hides on desktop)
+- Touch-friendly large tap targets
+
+**Usage:**
+```vue
+<MobileNavbar />
+```
+
+The navbar is included in `layouts/default.vue`.
+
+## Pet System
+
+The app features a pet ownership system with full customization.
+
+### Pet Display Component (`PetDisplay.vue`)
+
+SVG-based cat with extensive customization:
+
+**Props:**
+```typescript
+interface Props {
+  name?: string
+  level?: number
+  evolutionStage?: 1 | 2 | 3
+  mood?: 'happy' | 'sad' | 'hungry' | 'sleeping' | 'normal'
+  petColor?: string       // Main fur color
+  petAccent?: string      // Secondary color (inner ears, etc.)
+  accessories?: {
+    hat?: string          // CSS color
+    collar?: string        // CSS color
+    bow?: string           // CSS color
+    glasses?: string      // CSS color (border)
+  }
+  size?: 'sm' | 'md' | 'lg'
+  showMoodIndicator?: boolean
+  showLevelBadge?: boolean
+  showName?: boolean
+  animated?: boolean
+}
+```
+
+**Available Colors:**
+- **Fur colors**: 12 options (orange, gray, black, white, brown, cream, calico, etc.)
+- **Accent colors**: 6 options (light pink, peach, lavender, mint, sky blue, coral)
+
+**Mood States:**
+- `normal` - Default happy expression
+- `happy` - Wider pupils, smile, blush marks
+- `sad` - Droopy pupils, frown, tilted head
+- `hungry` - Body shake animation
+- `sleeping` - Closed eyes (curved paths), slow breathing
+
+**Animations:**
+- Body bounce (idle)
+- Tail wag
+- Ear wiggle
+- Head bob
+- Blink cycle
+- Mood-specific animations
+
+**Evolution Visuals:**
+- Stage 1 (Baby): Standard cat
+- Stage 2 (Teen): Star accessory above head
+- Stage 3 (Adult): Wing accessories with flap animation
+
+### CustomizePetModal Component
+
+Modal for customizing pet appearance with live preview.
+
+**Features:**
+- Color pickers for fur and accent colors
+- Accessory toggles (hat, collar, bow, glasses)
+- Color picker for each accessory
+- Real-time preview of changes
+- Save/Cancel buttons
+
+### Pet Types (`types/pet.ts`)
+
+```typescript
+interface Pet {
+  id: string
+  name: string
+  species: 'cat'
+  level: number
+  experience: number
+  evolutionStage: 1 | 2 | 3
+  stats: { attack, defense, health, maxHealth }
+  lastFed: Date | null
+  feedingStreak: number
+  likes: number  // For beauty ranking
+  customization?: PetCustomization
+}
+
+interface PetCustomization {
+  furColor: string
+  accentColor: string
+  accessories: PetAccessories
+}
+
+interface PetAccessories {
+  hat?: string
+  collar?: string
+  bow?: string
+  glasses?: string
+}
+```
+
+### Adopting a Pet
+
+Users adopt a pet by spending 10 basic food. Once adopted, the pet appears at `/pet` and in the navigation header.
+
+```typescript
+// Adopt a starter pet
+petStore.createStarterPet('Whiskers')
+```
+
+### Feeding & Leveling
+
+Feed your pet with food earned from exams. Different food types provide different XP and stat bonuses:
+
+| Food Type | XP | Stat Bonus | Earned From |
+|-----------|-----|------------|-------------|
+| Basic Kibble | +10 | +1 ATK | Exam completion |
+| Premium Fish | +30 | +2 DEF, +1 ATK | 90%+ exam score |
+| Legendary Tuna | +80 | +5 HP, +2 ATK, +2 DEF | 100% exam score |
+
+```typescript
+// Feed pet
+petStore.feedPet('premium')
+```
+
+### Evolution System
+
+Pets evolve through three stages as they level up:
+
+| Stage | Level Range | Visual | Stat Multiplier |
+|-------|-------------|--------|-----------------|
+| Baby | 1-10 | Small orange cat | 1x |
+| Teen | 11-30 | Medium cat with star | 1.5x |
+| Adult | 31-100 | Full cat with wings | 2x |
+
+Evolution triggers automatically at levels 10 and 30 with a celebration animation.
+
+### Battle System
+
+Turn-based battles use quiz questions from your decks. Battle power is calculated from pet stats and user achievements.
+
+**Battle Flow:**
+1. Select difficulty (Easy/Medium/Hard)
+2. Choose opponent
+3. Each turn: See question → Select answer → Pet attacks
+4. **Correct answer**: Increases critical streak, boosting damage
+5. **Wrong answer**: Pet attacks with normal damage, streak resets
+6. Battle ends when HP reaches 0 or max turns (10) reached
+
+**Battle Power Formula:**
+```
+petPower = (level * 2) + (attack * 0.5) + (defense * 0.3) + studyBonus
+studyBonus = totalCardsStudied * 0.1 + perfectExams * 5 + streak * 2
+```
+
+**Rewards:**
+- Win: XP + food (based on difficulty)
+- Draw: Partial XP
+- Lose: No rewards
+
+```typescript
+// Start battle
+const session = useBattleSession()
+session.startBattle(opponent)
+
+// Submit answer
+session.submitAnswer(selectedOption)
+session.executePlayerAttack()
+```
+
+### Food Inventory
+
+Food is automatically awarded when completing exams:
+- Base: +5 basic food
+- 90%+ score: +8 premium food
+- 100% score: +15 rare food
+
+Max inventory capacity: 100 (can be upgraded later)
+
+### Components
+
+| Component | Purpose |
+|-----------|---------|
+| `PetDisplay.vue` | SVG cat with evolution stages, moods, animations |
+| `PetStats.vue` | ATK/DEF/HP bars and power display |
+| `FoodInventory.vue` | Food counts with feeding UI |
+| `FeedPetModal.vue` | Select food to feed pet |
+| `EvolutionModal.vue` | Evolution celebration animation |
+| `CustomizePetModal.vue` | Pet color and accessory customization |
+| `MobileNavbar.vue` | Mobile bottom navigation bar |
+| `BattleArena.vue` | Main battle UI with HP bars |
+| `BattleLog.vue` | Battle history entries |
+| `PetLeaderboardMini.vue` | Top 3 pets display for /pet page |
+| `PetLeaderboardFull.vue` | Full leaderboard with category tabs |
+
+## Pet Leaderboard System
+
+The pet leaderboard allows players to compare their pets with others using multiple ranking categories.
+
+**Ranking Categories:**
+| Category | Sort By | Description |
+|----------|---------|-------------|
+| Level | Level DESC | Highest pet level |
+| Power | Power DESC | Combat strength (calculated) |
+| Defense | Defense DESC | Defensive stats |
+| Health | Health DESC | Maximum HP |
+| Beauty | Evolution > Likes DESC | Based on evolution stage and user likes |
+
+**Power Calculation:**
+```
+power = (level * 2 + attack * 0.5 + defense * 0.3 + studyBonus) * evolutionMultiplier
+```
+
+**AI Simulation:**
+- 20 AI pets generated with fake data on each session
+- Names: "Shadow Fang", "Fire Claw", "Ice Whisker", etc.
+- Levels: 5-80 (random)
+- Toggle on/off in `/settings` page
+- Leaderboard regenerates each session (no persistence)
+
+**Components:**
+- `PetLeaderboardMini.vue` - Shows top 3 pets on `/pet` page
+- `PetLeaderboardFull.vue` - Full table with category tabs on `/leaderboard` page
+
 ## Layouts
 
 | Layout | Used By | Description |
 |--------|---------|-------------|
-| `default.vue` | All pages except landing | App header with FlashLearn logo, navigation, XP bar, streak badge |
+| `default.vue` | All pages except landing | App header with FlashLearn logo, navigation, XP bar, streak badge, MobileNavbar |
 | `landing.vue` | `/` | Minimal layout for marketing landing page (no header/footer) |
 
 ## Pages
@@ -223,7 +530,7 @@ tailwind.config.js     # Tailwind configuration
 | Deck Detail | `/deck/[id]` | View deck, add/edit cards, start study or exam |
 | Study | `/study/[id]` | Flashcard study mode with flip interaction |
 | Exam | `/exam/[id]` | Timed exam with input or multiple-choice questions |
-| Pet | `/pet` | Pet management, feeding, evolution (includes mini leaderboard) |
+| Pet | `/pet` | Pet management, feeding, customization, evolution |
 | Battle | `/battle` | PvE battle arena with quiz-based combat |
 | Leaderboard | `/leaderboard` | Full pet leaderboard with multiple ranking categories |
 | Settings | `/settings` | App settings including simulation toggle for AI pets |
@@ -324,11 +631,14 @@ Users can skip via "Skip" button. Skip status stored in `userStats.onboardingCom
 ## Key Patterns
 
 - **State management**: Pinia stores for global state; composables for reusable logic
-- **Persistence**: localStorage via composables (`useLocalStorage`), stores handle their own persistence
+- **Persistence**: 
+  - Client: localStorage via composables (`useLocalStorage`), stores handle their own persistence
+  - Server: Neon PostgreSQL with Drizzle ORM
 - **Reactivity**: Vue 3 Composition API (`ref`, `reactive`, `computed`)
 - **Study flow**: Create deck → Add cards → Study mode with flip interaction
 - **Exam flow**: Create deck → Add cards → Exam mode with text input, timed answers, leaderboard tracking
 - **Design**: Senior-friendly UX with large fonts (18px base), high contrast, clear navigation
+- **Mobile-first**: Fixed bottom navigation for mobile users, responsive design
 
 ### Exam Feature
 
@@ -360,176 +670,4 @@ type ExamQuestionType = 'input' | 'multiple-choice'
 
 // Generate MC options from deck answers
 generateMultipleChoiceOptions(correctAnswer, allAnswers, currentCardId)
-```
-
-## Pet System
-
-The app features a pet ownership system where users can adopt, feed, and battle with their cat companion.
-
-### Adopting a Pet
-
-Users adopt a pet by spending 10 basic food. Once adopted, the pet appears at `/pet` and in the navigation header.
-
-```typescript
-// Adopt a starter pet
-petStore.createStarterPet('Whiskers')
-```
-
-### Feeding & Leveling
-
-Feed your pet with food earned from exams. Different food types provide different XP and stat bonuses:
-
-| Food Type | XP | Stat Bonus | Earned From |
-|-----------|-----|------------|-------------|
-| Basic Kibble | +10 | +1 ATK | Exam completion |
-| Premium Fish | +30 | +2 DEF, +1 ATK | 90%+ exam score |
-| Legendary Tuna | +80 | +5 HP, +2 ATK, +2 DEF | 100% exam score |
-
-```typescript
-// Feed pet
-petStore.feedPet('premium')
-```
-
-### Evolution System
-
-Pets evolve through three stages as they level up:
-
-| Stage | Level Range | Visual | Stat Multiplier |
-|-------|-------------|--------|-----------------|
-| Baby | 1-10 | Small orange cat | 1x |
-| Teen | 11-30 | Medium cat with star | 1.5x |
-| Adult | 31-100 | Full cat with wings | 2x |
-
-Evolution triggers automatically at levels 10 and 30 with a celebration animation.
-
-### Battle System
-
-Turn-based battles use quiz questions from your decks. Battle power is calculated from pet stats and user achievements.
-
-**Battle Flow:**
-1. Select difficulty (Easy/Medium/Hard)
-2. Choose opponent
-3. Each turn: See question → Select answer → Pet attacks
-4. **Correct answer**: Increases critical streak, boosting damage
-5. **Wrong answer**: Pet attacks with normal damage, streak resets
-6. Battle ends when HP reaches 0 or max turns (10) reached
-
-**Battle Power Formula:**
-```
-petPower = (level * 2) + (attack * 0.5) + (defense * 0.3) + studyBonus
-studyBonus = totalCardsStudied * 0.1 + perfectExams * 5 + streak * 2
-```
-
-**Rewards:**
-- Win: XP + food (based on difficulty)
-- Draw: Partial XP
-- Lose: No rewards
-
-```typescript
-// Start battle
-const session = useBattleSession()
-session.startBattle(opponent)
-
-// Submit answer
-session.submitAnswer(selectedOption)
-session.executePlayerAttack()
-```
-
-### Food Inventory
-
-Food is automatically awarded when completing exams:
-- Base: +5 basic food
-- 90%+ score: +8 premium food
-- 100% score: +15 rare food
-
-Max inventory capacity: 100 (can be upgraded later)
-
-### Components
-
-| Component | Purpose |
-|-----------|---------|
-| `PetDisplay.vue` | SVG cat with evolution stages |
-| `PetStats.vue` | ATK/DEF/HP bars and power display |
-| `FoodInventory.vue` | Food counts with feeding UI |
-| `FeedPetModal.vue` | Select food to feed pet |
-| `EvolutionModal.vue` | Evolution celebration animation |
-| `BattleArena.vue` | Main battle UI with HP bars |
-| `BattleLog.vue` | Battle history entries |
-| `PetLeaderboardMini.vue` | Top 3 pets display for /pet page |
-| `PetLeaderboardFull.vue` | Full leaderboard with category tabs |
-
-### Types (`types/pet.ts`)
-
-```typescript
-interface Pet {
-  id: string
-  name: string
-  species: 'cat'
-  level: number
-  experience: number
-  evolutionStage: 1 | 2 | 3
-  stats: { attack, defense, health, maxHealth }
-  lastFed: Date | null
-  feedingStreak: number
-  likes: number  // For beauty ranking
-}
-
-type FoodType = 'basic' | 'premium' | 'rare'
-
-type BattleDifficulty = 'easy' | 'medium' | 'hard'
-
-type LeaderboardCategory = 'level' | 'power' | 'defense' | 'health' | 'beauty'
-
-interface PetLeaderboardEntry {
-  id: string
-  ownerName: string
-  petName: string
-  level: number
-  power: number
-  defense: number
-  health: number
-  maxHealth: number
-  evolutionStage: EvolutionStage
-  wins: number
-  losses: number
-  winRate: number
-  isPlayerPet: boolean
-  isAIPet: boolean
-  likes: number
-}
-
-interface LeaderboardSettings {
-  simulationEnabled: boolean
-  lastRefreshed: string | null
-}
-```
-
-### Pet Leaderboard System
-
-The pet leaderboard allows players to compare their pets with others using multiple ranking categories.
-
-**Ranking Categories:**
-| Category | Sort By | Description |
-|----------|---------|-------------|
-| Level | Level DESC | Highest pet level |
-| Power | Power DESC | Combat strength (calculated) |
-| Defense | Defense DESC | Defensive stats |
-| Health | Health DESC | Maximum HP |
-| Beauty | Evolution > Likes DESC | Based on evolution stage and user likes |
-
-**Power Calculation:**
-```
-power = (level * 2 + attack * 0.5 + defense * 0.3 + studyBonus) * evolutionMultiplier
-```
-
-**AI Simulation:**
-- 20 AI pets generated with fake data on each session
-- Names: "Shadow Fang", "Fire Claw", "Ice Whisker", etc.
-- Levels: 5-80 (random)
-- Toggle on/off in `/settings` page
-- Leaderboard regenerates each session (no persistence)
-
-**Components:**
-- `PetLeaderboardMini.vue` - Shows top 3 pets on `/pet` page
-- `PetLeaderboardFull.vue` - Full table with category tabs on `/leaderboard` page
 ```

@@ -1,0 +1,117 @@
+{
+  "app": {
+    "name": "FlashLearn",
+    "tagline": "通过游戏化学习掌握任何学科"
+  },
+  "nav": {
+    "home": "首页",
+    "profile": "个人资料",
+    "myPet": "我的宠物",
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出登录",
+    "features": "功能",
+    "howItWorks": "如何使用",
+    "petSystem": "宠物系统"
+  },
+  "landing": {
+    "hero": {
+      "title": "FlashLearn",
+      "subtitle": "通过互动闪卡、计时考试和精彩的宠物战斗掌握任何学科。聪明学习，提升等级，成为学习冠军！",
+      "cta": "开始学习",
+      "ctaSecondary": "了解更多"
+    },
+    "features": {
+      "title": "强大的学习功能",
+      "flashcards": {
+        "title": "互动闪卡",
+        "description": "翻转卡片查看答案。评估您的记忆力并通过间隔重复系统跟踪您的进度。"
+      },
+      "exams": {
+        "title": "计时考试",
+        "description": "通过限时测验测试您的知识。选择输入答案或选择题。"
+      },
+      "xp": {
+        "title": "经验值和等级",
+        "description": "每次学习会话和考试都能获得经验点数。看着您的等级随着学习而增长！"
+      },
+      "challenges": {
+        "title": "每日挑战",
+        "description": "完成每日挑战以获得额外经验值并保持您的学习连续性。"
+      },
+      "pets": {
+        "title": "宠物伙伴",
+        "description": "领养一只猫咪，喂养它，看着它进化。您的宠物会随着您的进步而变得更强大！"
+      },
+      "battles": {
+        "title": "战斗竞技场",
+        "description": "用您的知识增强攻击力量。正确答案造成暴击伤害击败对手！"
+      }
+    },
+    "howItWorks": {
+      "title": "如何使用",
+      "step1": {
+        "title": "创建或选择卡组",
+        "description": "从HSK中文、托业英语的预制卡组开始，或创建您自己的自定义卡组。"
+      },
+      "step2": {
+        "title": "学习与考试",
+        "description": "复习闪卡，参加计时考试，获得经验值、食物和徽章。"
+      },
+      "step3": {
+        "title": "喂养与战斗",
+        "description": "用食物升级您的宠物。与对手战斗，展示您的知识！"
+      }
+    },
+    "petShowcase": {
+      "title": "认识您的宠物伙伴",
+      "subtitle": "领养、喂养并进化您自己的猫咪！",
+      "baby": "幼崽 (1-10级)",
+      "teen": "青少年 (11-30级)",
+      "adult": "成年 (31级以上)",
+      "stats": "属性",
+      "attack": "攻击",
+      "defense": "防御",
+      "health": "生命"
+    },
+    "cta": {
+      "title": "准备好开始您的旅程了吗？",
+      "subtitle": "加入成千上万每天掌握新学科的学习者。",
+      "button": "免费开始"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "欢迎回来",
+      "subtitle": "登录以继续您的学习之旅",
+      "email": "邮箱",
+      "password": "密码",
+      "submit": "登录",
+      "noAccount": "还没有账户？",
+      "registerLink": "立即注册"
+    },
+    "register": {
+      "title": "创建账户",
+      "subtitle": "立即开始您的学习冒险",
+      "username": "用户名",
+      "email": "邮箱",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "submit": "创建账户",
+      "hasAccount": "已有账户？",
+      "loginLink": "立即登录"
+    },
+    "validation": {
+      "emailRequired": "邮箱是必填项",
+      "emailInvalid": "请输入有效的邮箱",
+      "passwordRequired": "密码是必填项",
+      "passwordMin": "密码至少需要6个字符",
+      "passwordMismatch": "密码不匹配",
+      "usernameRequired": "用户名是必填项"
+    }
+  },
+  "footer": {
+    "builtWith": "使用以下技术构建",
+    "techStack": "Nuxt 3 + Vue 3 + Pinia + TailwindCSS"
+  }
+}

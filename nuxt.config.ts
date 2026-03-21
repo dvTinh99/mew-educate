@@ -1,21 +1,42 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: false },
+  devtools: { enabled: true },
   
   modules: [
     '@nuxtjs/tailwindcss',
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+    '@nuxtjs/i18n'
   ],
 
   css: ['~/assets/css/main.css'],
 
+  i18n: {
+    locales: [
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'vi', name: 'Tiếng Việt', file: 'vi.json' },
+      { code: 'zh', name: '简体中文', file: 'zh.json' }
+    ],
+    defaultLocale: 'en',
+    lazy: true,
+    langDir: 'locales/',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_locale',
+      redirectOn: 'root',
+      alwaysRedirect: false,
+      fallbackLocale: 'en'
+    }
+  },
+
   app: {
     head: {
-      title: 'FlashLearn - Your Flashcard Study App',
+      title: 'Learn by Game',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'A simple and accessible flashcard app for effective learning' }
+        {       name: 'description',
+      content: 'FlashLearn - Master any subject through gamified flashcards, exams, and pet battles' }
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }

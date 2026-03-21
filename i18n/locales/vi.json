@@ -1,0 +1,117 @@
+{
+  "app": {
+    "name": "FlashLearn",
+    "tagline": "Làm chủ mọi chủ đề thông qua học tập gamified"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "profile": "Hồ sơ",
+    "myPet": "Thú Cưng",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
+    "features": "Tính năng",
+    "howItWorks": "Cách hoạt động",
+    "petSystem": "Hệ thống thú cưng"
+  },
+  "landing": {
+    "hero": {
+      "title": "FlashLearn",
+      "subtitle": "Làm chủ mọi chủ đề với thẻ ghi nhớ, bài kiểm tra có thời gian và chiến đấu với thú cưng. Học thông minh, nâng cấp và trở thành nhà vô địch học tập!",
+      "cta": "Bắt đầu học",
+      "ctaSecondary": "Tìm hiểu thêm"
+    },
+    "features": {
+      "title": "Tính năng học tập mạnh mẽ",
+      "flashcards": {
+        "title": "Thẻ Ghi Nhớ Tương tác",
+        "description": "Lật thẻ để xem đáp án. Đánh giá khả năng nhớ và theo dõi tiến độ của bạn với hệ thống lặp lại ngắn cách."
+      },
+      "exams": {
+        "title": "Bài Kiểm Tra Có Thời Gian",
+        "description": "Kiểm tra kiến thức với các câu đố có giới hạn thời gian. Chọn giữa nhập đáp án hoặc chọn đáp án đúng."
+      },
+      "xp": {
+        "title": "Điểm Kinh Nghiệm & Cấp Độ",
+        "description": "Tích lũy điểm kinh nghiệm cho mỗi phiên học và bài kiểm tra. Xem cấp độ của bạn tăng lên khi bạn học!"
+      },
+      "challenges": {
+        "title": "Thử Thách Hàng Ngày",
+        "description": "Hoàn thành thử thách hàng ngày để nhận điểm kinh nghiệm bonus và duy trì chuỗi học tập của bạn."
+      },
+      "pets": {
+        "title": "Thú Cưng Đồng Hành",
+        "description": "Nhận nuôi một chú mèo, cho ăn và xem nó tiến hóa. Thú cưng của bạn trở nên mạnh hơn theo tiến độ của bạn!"
+      },
+      "battles": {
+        "title": "Đấu Trường",
+        "description": "Sử dụng kiến thức để tăng sức mạnh tấn công. Trả lời đúng để gây sát thương chí mạng cho đối thủ!"
+      }
+    },
+    "howItWorks": {
+      "title": "Cách Hoạt Động",
+      "step1": {
+        "title": "Tạo hoặc Chọn Bộ Thẻ",
+        "description": "Bắt đầu với các bộ thẻ có sẵn cho HSK Tiếng Trung, TOEIC Tiếng Anh, hoặc tạo bộ thẻ tùy chỉnh của riêng bạn."
+      },
+      "step2": {
+        "title": "Học & Làm Bài Kiểm Tra",
+        "description": "Ôn tập thẻ ghi nhớ, làm bài kiểm tra có thời gian, và kiếm điểm kinh nghiệm, thức ăn và huy hiệu khi bạn tiến bộ."
+      },
+      "step3": {
+        "title": "Cho Ăn & Chiến Đấu",
+        "description": "Sử dụng thức ăn để nâng cấp thú cưng của bạn. Đấu với đối thủ và thể hiện kiến thức của bạn!"
+      }
+    },
+    "petShowcase": {
+      "title": "Gặp Gỡ Thú Cưng Của Bạn",
+      "subtitle": "Nhận nuôi, cho ăn và tiến hóa chú mèo của riêng bạn!",
+      "baby": "Trẻ (Cấp 1-10)",
+      "teen": "Vị Thành Niên (Cấp 11-30)",
+      "adult": "Trưởng Thành (Cấp 31+)",
+      "stats": "Chỉ số",
+      "attack": "Tấn công",
+      "defense": "Phòng thủ",
+      "health": "Máu"
+    },
+    "cta": {
+      "title": "Sẵn Sàng Bắt Đầu Hành Trình?",
+      "subtitle": "Tham gia cùng hàng nghìn người học làm chủ các chủ đề mới mỗi ngày.",
+      "button": "Bắt Đầu Miễn Phí"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Chào Mừng Trở Lại",
+      "subtitle": "Đăng nhập để tiếp tục hành trình học tập của bạn",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "submit": "Đăng nhập",
+      "noAccount": "Chưa có tài khoản?",
+      "registerLink": "Đăng ký ngay"
+    },
+    "register": {
+      "title": "Tạo Tài Khoản",
+      "subtitle": "Bắt đầu cuộc phiêu lưu học tập của bạn ngay hôm nay",
+      "username": "Tên người dùng",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "submit": "Tạo Tài Khoản",
+      "hasAccount": "Đã có tài khoản?",
+      "loginLink": "Đăng nhập ngay"
+    },
+    "validation": {
+      "emailRequired": "Email là bắt buộc",
+      "emailInvalid": "Vui lòng nhập email hợp lệ",
+      "passwordRequired": "Mật khẩu là bắt buộc",
+      "passwordMin": "Mật khẩu phải có ít nhất 6 ký tự",
+      "passwordMismatch": "Mật khẩu không khớp",
+      "usernameRequired": "Tên người dùng là bắt buộc"
+    }
+  },
+  "footer": {
+    "builtWith": "Xây dựng với",
+    "techStack": "Nuxt 3 + Vue 3 + Pinia + TailwindCSS"
+  }
+}

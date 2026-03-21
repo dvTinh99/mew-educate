@@ -1,0 +1,117 @@
+{
+  "app": {
+    "name": "FlashLearn",
+    "tagline": "Master any subject through gamified learning"
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "myPet": "My Pet",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "petSystem": "Pet System"
+  },
+  "landing": {
+    "hero": {
+      "title": "FlashLearn",
+      "subtitle": "Master any subject through gamified flashcards, timed exams, and exciting pet battles. Study smart, level up, and become a learning champion!",
+      "cta": "Start Learning",
+      "ctaSecondary": "Learn More"
+    },
+    "features": {
+      "title": "Powerful Learning Features",
+      "flashcards": {
+        "title": "Interactive Flashcards",
+        "description": "Flip cards to reveal answers. Rate your recall and track your progress with our spaced repetition system."
+      },
+      "exams": {
+        "title": "Timed Exams",
+        "description": "Test your knowledge with timed quizzes. Choose between type-in or multiple choice answers."
+      },
+      "xp": {
+        "title": "XP & Leveling",
+        "description": "Earn experience points for every study session and exam. Watch your level grow as you learn!"
+      },
+      "challenges": {
+        "title": "Daily Challenges",
+        "description": "Complete daily challenges to earn bonus XP and maintain your learning streak."
+      },
+      "pets": {
+        "title": "Pet Companions",
+        "description": "Adopt a pet cat, feed it, and watch it evolve. Your pet grows stronger with your progress!"
+      },
+      "battles": {
+        "title": "Battle Arena",
+        "description": "Use your knowledge to power up attacks. Answer correctly to deal critical damage to opponents!"
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Create or Choose a Deck",
+        "description": "Start with pre-built decks for HSK Chinese, TOEIC English, or create your own custom deck."
+      },
+      "step2": {
+        "title": "Study & Take Exams",
+        "description": "Review flashcards, take timed exams, and earn XP, food, and badges as you progress."
+      },
+      "step3": {
+        "title": "Feed & Battle",
+        "description": "Use food to level up your pet. Battle opponents and show off your knowledge!"
+      }
+    },
+    "petShowcase": {
+      "title": "Meet Your Pet Companion",
+      "subtitle": "Adopt, feed, and evolve your very own cat!",
+      "baby": "Baby (Lv. 1-10)",
+      "teen": "Teen (Lv. 11-30)",
+      "adult": "Adult (Lv. 31+)",
+      "stats": "Stats",
+      "attack": "Attack",
+      "defense": "Defense",
+      "health": "Health"
+    },
+    "cta": {
+      "title": "Ready to Start Your Journey?",
+      "subtitle": "Join thousands of learners mastering new subjects every day.",
+      "button": "Get Started Free"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Login to continue your learning journey",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Register here"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Start your learning adventure today",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create Account",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Login here"
+    },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match",
+      "usernameRequired": "Username is required"
+    }
+  },
+  "footer": {
+    "builtWith": "Built with",
+    "techStack": "Nuxt 3 + Vue 3 + Pinia + TailwindCSS"
+  }
+}

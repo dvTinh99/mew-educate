@@ -1,5 +1,5 @@
 import { ref, computed, onUnmounted } from 'vue'
-import type { Card } from '~/stores/deck'
+import type { Card } from '~/types/deck'
 import type { ExamAnswer, ExamQuestionType, MultipleChoiceOption } from '~/types/exam'
 import { checkAnswer, generateMultipleChoiceOptions } from '~/types/exam'
 

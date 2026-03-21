@@ -1,55 +1,9 @@
 import { defineStore } from 'pinia'
 import { calculateScore, getGrade, type ExamAnswer, type ExamResult, type LeaderboardEntry } from '~/types/exam'
 import { calculateLevel, getXPForNextLevel, getStreakMultiplier, ALL_BADGES, CHALLENGE_TEMPLATES, type UserStats, type DailyChallenge } from '~/types/gamification'
+import { type Card, type Deck, type DeckCategory, type DeckDifficulty, type DeckLanguage, type PrebuiltDataFile } from '~/types/deck'
 
-export type DeckCategory = 'hsk' | 'toeic' | 'general'
-export type DeckDifficulty = 'beginner' | 'intermediate' | 'advanced'
-export type DeckLanguage = 'chinese' | 'english' | 'general'
-
-export interface Card {
-  id: string
-  front: string
-  back: string
-  hint?: string
-  difficulty?: 'again' | 'hard' | 'good' | 'easy'
-  lastReviewed?: Date
-  reviewCount: number
-}
-
-export interface Deck {
-  id: string
-  name: string
-  description?: string
-  cards: Card[]
-  createdAt: Date
-  lastStudied?: Date
-  category?: DeckCategory
-  difficulty?: DeckDifficulty
-  language?: DeckLanguage
-  isPreBuilt?: boolean
-  deckIcon?: string
-  tags?: string[]
-  version?: string
-}
-
-interface PrebuiltDeckData {
-  id: string
-  name: string
-  description?: string
-  category: DeckCategory
-  difficulty: DeckDifficulty
-  language: DeckLanguage
-  isPreBuilt: boolean
-  deckIcon?: string
-  tags?: string[]
-  cards: { front: string; back: string; hint?: string }[]
-}
-
-interface PrebuiltDataFile {
-  version: string
-  lastUpdated: string
-  decks: PrebuiltDeckData[]
-}
+export type { Card, Deck, DeckCategory, DeckDifficulty, DeckLanguage }
 
 export const useDeckStore = defineStore('deck', {
   state: () => ({
@@ -469,6 +423,8 @@ export const useDeckStore = defineStore('deck', {
       this.updateChallengeProgress('exam', 1)
       this.checkBadges()
 
+      this.awardPetFood(score)
+
       this.saveToStorage()
       return result
     },
@@ -652,6 +608,28 @@ export const useDeckStore = defineStore('deck', {
     skipOnboarding() {
       this.userStats.onboardingCompleted = true
       this.saveToStorage()
+    },
+
+    awardPetFood(score: number) {
+      if (typeof window === 'undefined') return
+      
+      import('~/stores/pet').then(({ usePetStore }) => {
+        const petStore = usePetStore()
+        
+        if (!petStore.petExists) return
+        
+        let foodType: 'basic' | 'premium' | 'rare' = 'basic'
+        let amount = 5
+        
+        if (score >= 90) {
+          foodType = score >= 100 ? 'rare' : 'premium'
+          amount = score >= 100 ? 15 : 8
+        }
+        
+        petStore.addFood(foodType, amount)
+      }).catch((e) => {
+        console.error('Failed to award pet food:', e)
+      })
     },
 
     resetProgress() {

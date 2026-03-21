@@ -1,4 +1,4 @@
-import type { Card } from '~/stores/deck'
+import type { Card } from '~/types/deck'
 
 export type ExamQuestionType = 'input' | 'multiple-choice'
 

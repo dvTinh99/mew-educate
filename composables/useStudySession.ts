@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import type { Card } from '~/stores/deck'
+import type { Card } from '~/types/deck'
 
 export const useStudySession = () => {
   const cards = ref<Card[]>([])

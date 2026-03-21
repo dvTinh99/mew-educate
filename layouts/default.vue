@@ -16,22 +16,58 @@
           </NuxtLink>
 
           <div class="flex items-center gap-4">
-            <div class="hidden lg:flex items-center gap-4">
+            <LanguageSwitcher />
+            <div v-if="authStore.isLoggedIn" class="hidden lg:flex items-center gap-4">
               <XpBar />
               <StreakBadge />
             </div>
-            <NuxtLink 
-              to="/stats" 
-              class="text-lg font-medium text-gray-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
-            >
-              Profile
-            </NuxtLink>
-            <NuxtLink 
-              to="/" 
-              class="text-lg font-medium text-gray-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
-            >
-              My Decks
-            </NuxtLink>
+            <template v-if="authStore.isLoggedIn">
+              <!-- <NuxtLink 
+                to="/battle" 
+                class="text-lg font-medium text-gray-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
+                ⚔️ <span class="hidden md:inline">Battle</span>
+              </NuxtLink> -->
+              <NuxtLink 
+                to="/pet" 
+                class="flex items-center gap-2 text-lg font-medium text-gray-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
+                <span class="text-xl">🐱</span>
+                <span class="hidden md:inline">My Pet</span>
+              </NuxtLink>
+              <NuxtLink 
+                to="/stats" 
+                class="text-lg font-medium text-gray-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
+                Profile
+              </NuxtLink>
+              <NuxtLink 
+                to="/profile" 
+                class="text-lg font-medium text-gray-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
+                My Decks
+              </NuxtLink>
+              <button 
+                class="text-lg font-medium text-gray-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+                @click="handleLogout"
+              >
+                Logout
+              </button>
+            </template>
+            <template v-else>
+              <NuxtLink 
+                to="/" 
+                class="text-lg font-medium text-gray-600 hover:text-primary-600 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
+                Features
+              </NuxtLink>
+              <button 
+                class="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl"
+                @click="router.push('/?login=true')"
+              >
+                Login
+              </button>
+            </template>
           </div>
         </nav>
       </div>
@@ -53,16 +89,30 @@
 
 <script setup lang="ts">
 import { useDeckStore } from '~/stores/deck'
+import { usePetStore } from '~/stores/pet'
+import { useAuthStore } from '~/stores/auth'
+import { useRouter } from 'vue-router'
 
 const deckStore = useDeckStore()
+const petStore = usePetStore()
+const authStore = useAuthStore()
+const router = useRouter()
 
 onMounted(async () => {
   deckStore.loadFromStorage()
+  petStore.loadFromStorage()
+  authStore.loadFromStorage()
   if (deckStore.decks.length === 0) {
     await deckStore.loadPrebuiltDecks()
   }
   deckStore.generateDailyChallenges()
 })
+
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/')
+}
+
 </script>
 
 <style scoped>

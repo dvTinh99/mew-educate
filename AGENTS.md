@@ -192,28 +192,39 @@ All interactive components must include:
 
 ```
 assets/css/main.css    # Global styles, Tailwind imports, component classes
-components/            # Vue components (AppButton, Flashcard, Modal, ExamCard, etc.)
-composables/           # Reusable composition functions (useLocalStorage, useStudySession, useExamSession)
-layouts/               # Page layouts (default.vue)
-pages/                 # Route pages (index, stats, onboarding, deck/[id], study/[id], exam/[id])
-stores/                # Pinia stores (deck.ts)
-types/                 # TypeScript types (exam.ts, gamification.ts)
+components/            # Vue components (AppButton, Flashcard, Modal, ExamCard, PetDisplay, etc.)
+composables/           # Reusable composition functions (useLocalStorage, useStudySession, useExamSession, useBattleSession)
+i18n/locales/          # i18n translation files (en.json, vi.json, zh.json)
+layouts/               # Page layouts (default.vue, landing.vue)
+pages/                 # Route pages (index, profile, stats, onboarding, pet, battle, deck/[id], study/[id], exam/[id])
+stores/                # Pinia stores (deck.ts, pet.ts, auth.ts)
+types/                 # TypeScript types (deck.ts, exam.ts, gamification.ts, pet.ts)
 public/data/           # Pre-built deck JSON files (hskDecks.json, toeicDecks.json, generalDecks.json)
 app.vue                # Root app component
 nuxt.config.ts         # Nuxt configuration
 tailwind.config.js     # Tailwind configuration
 ```
 
+## Layouts
+
+| Layout | Used By | Description |
+|--------|---------|-------------|
+| `default.vue` | All pages except landing | App header with FlashLearn logo, navigation, XP bar, streak badge |
+| `landing.vue` | `/` | Minimal layout for marketing landing page (no header/footer) |
+
 ## Pages
 
 | Page | Route | Description |
 |------|-------|-------------|
-| Home | `/` | Dashboard with stats bar, daily challenges, deck browsing |
+| Landing | `/` | Marketing landing page with login/register (shows profile for logged-in users) |
+| Profile | `/profile` | User dashboard with stats bar, daily challenges, deck browsing |
 | Stats | `/stats` | User profile with Chart.js progress charts, badges, exam history |
 | Onboarding | `/onboarding` | 5-step tutorial with skip button for new users |
 | Deck Detail | `/deck/[id]` | View deck, add/edit cards, start study or exam |
 | Study | `/study/[id]` | Flashcard study mode with flip interaction |
 | Exam | `/exam/[id]` | Timed exam with input or multiple-choice questions |
+| Pet | `/pet` | Pet management, feeding, evolution |
+| Battle | `/battle` | PvE battle arena with quiz-based combat |
 
 ## Gamification System
 
@@ -347,4 +358,118 @@ type ExamQuestionType = 'input' | 'multiple-choice'
 
 // Generate MC options from deck answers
 generateMultipleChoiceOptions(correctAnswer, allAnswers, currentCardId)
+```
+
+## Pet System
+
+The app features a pet ownership system where users can adopt, feed, and battle with their cat companion.
+
+### Adopting a Pet
+
+Users adopt a pet by spending 10 basic food. Once adopted, the pet appears at `/pet` and in the navigation header.
+
+```typescript
+// Adopt a starter pet
+petStore.createStarterPet('Whiskers')
+```
+
+### Feeding & Leveling
+
+Feed your pet with food earned from exams. Different food types provide different XP and stat bonuses:
+
+| Food Type | XP | Stat Bonus | Earned From |
+|-----------|-----|------------|-------------|
+| Basic Kibble | +10 | +1 ATK | Exam completion |
+| Premium Fish | +30 | +2 DEF, +1 ATK | 90%+ exam score |
+| Legendary Tuna | +80 | +5 HP, +2 ATK, +2 DEF | 100% exam score |
+
+```typescript
+// Feed pet
+petStore.feedPet('premium')
+```
+
+### Evolution System
+
+Pets evolve through three stages as they level up:
+
+| Stage | Level Range | Visual | Stat Multiplier |
+|-------|-------------|--------|-----------------|
+| Baby | 1-10 | Small orange cat | 1x |
+| Teen | 11-30 | Medium cat with star | 1.5x |
+| Adult | 31-100 | Full cat with wings | 2x |
+
+Evolution triggers automatically at levels 10 and 30 with a celebration animation.
+
+### Battle System
+
+Turn-based battles use quiz questions from your decks. Battle power is calculated from pet stats and user achievements.
+
+**Battle Flow:**
+1. Select difficulty (Easy/Medium/Hard)
+2. Choose opponent
+3. Each turn: See question → Select answer → Pet attacks
+4. **Correct answer**: Increases critical streak, boosting damage
+5. **Wrong answer**: Pet attacks with normal damage, streak resets
+6. Battle ends when HP reaches 0 or max turns (10) reached
+
+**Battle Power Formula:**
+```
+petPower = (level * 2) + (attack * 0.5) + (defense * 0.3) + studyBonus
+studyBonus = totalCardsStudied * 0.1 + perfectExams * 5 + streak * 2
+```
+
+**Rewards:**
+- Win: XP + food (based on difficulty)
+- Draw: Partial XP
+- Lose: No rewards
+
+```typescript
+// Start battle
+const session = useBattleSession()
+session.startBattle(opponent)
+
+// Submit answer
+session.submitAnswer(selectedOption)
+session.executePlayerAttack()
+```
+
+### Food Inventory
+
+Food is automatically awarded when completing exams:
+- Base: +5 basic food
+- 90%+ score: +8 premium food
+- 100% score: +15 rare food
+
+Max inventory capacity: 100 (can be upgraded later)
+
+### Components
+
+| Component | Purpose |
+|-----------|---------|
+| `PetDisplay.vue` | SVG cat with evolution stages |
+| `PetStats.vue` | ATK/DEF/HP bars and power display |
+| `FoodInventory.vue` | Food counts with feeding UI |
+| `FeedPetModal.vue` | Select food to feed pet |
+| `EvolutionModal.vue` | Evolution celebration animation |
+| `BattleArena.vue` | Main battle UI with HP bars |
+| `BattleLog.vue` | Battle history entries |
+
+### Types (`types/pet.ts`)
+
+```typescript
+interface Pet {
+  id: string
+  name: string
+  species: 'cat'
+  level: number
+  experience: number
+  evolutionStage: 1 | 2 | 3
+  stats: { attack, defense, health, maxHealth }
+  lastFed: Date | null
+  feedingStreak: number
+}
+
+type FoodType = 'basic' | 'premium' | 'rare'
+
+type BattleDifficulty = 'easy' | 'medium' | 'hard'
 ```

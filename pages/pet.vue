@@ -15,6 +15,8 @@
         <p class="text-xl text-gray-600">Care for your pet and make it stronger</p>
       </div>
 
+      <PetLeaderboardMini class="mb-8" />
+
       <div v-if="!pet" class="card p-12 text-center max-w-lg mx-auto">
         <div class="w-32 h-32 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center mx-auto mb-6">
           <span class="text-6xl">🐱</span>
@@ -268,6 +270,7 @@ import FoodInventory from '~/components/FoodInventory.vue'
 import FeedPetModal from '~/components/FeedPetModal.vue'
 import EvolutionModal from '~/components/EvolutionModal.vue'
 import AppButton from '~/components/AppButton.vue'
+import PetLeaderboardMini from '~/components/PetLeaderboardMini.vue'
 
 const router = useRouter()
 const petStore = usePetStore()

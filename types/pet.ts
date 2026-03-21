@@ -3,6 +3,7 @@ export type EvolutionStage = 1 | 2 | 3
 export type BattleType = 'pve' | 'pvp'
 export type BattleResult = 'win' | 'lose' | 'draw'
 export type BattleDifficulty = 'easy' | 'medium' | 'hard'
+export type LeaderboardCategory = 'level' | 'power' | 'defense' | 'health' | 'beauty'
 
 export interface PetStats {
   attack: number
@@ -22,6 +23,30 @@ export interface Pet {
   lastFed: Date | null
   feedingStreak: number
   createdAt: Date
+  likes: number
+}
+
+export interface PetLeaderboardEntry {
+  id: string
+  ownerName: string
+  petName: string
+  level: number
+  power: number
+  defense: number
+  health: number
+  maxHealth: number
+  evolutionStage: EvolutionStage
+  wins: number
+  losses: number
+  winRate: number
+  isPlayerPet: boolean
+  isAIPet: boolean
+  likes: number
+}
+
+export interface LeaderboardSettings {
+  simulationEnabled: boolean
+  lastRefreshed: string | null
 }
 
 export interface Food {

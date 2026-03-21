@@ -7,12 +7,16 @@ import {
   type BattleOpponent,
   type EvolutionStage,
   type PetStats,
+  type PetLeaderboardEntry,
+  type LeaderboardCategory,
+  type LeaderboardSettings,
   FOOD_TYPES,
   EVOLUTION_THRESHOLDS,
   calculateEvolutionStage,
   getXPForNextLevel,
   calculatePetPower,
-  getFoodRewardForExam
+  getFoodRewardForExam,
+  STAT_MULTIPLIERS
 } from '~/types/pet'
 import { useDeckStore } from '~/stores/deck'
 
@@ -27,6 +31,13 @@ const OPPONENT_SPECIES = [
   'Void Cat', 'Solar Cat', 'Storm Cat', 'Ghost Cat'
 ]
 
+const AI_TRAINER_NAMES = [
+  'DragonMaster', 'NinjaCat', 'PixelPaws', 'ShadowHunter', 'CosmicFur',
+  'StarWhisker', 'ThunderTail', 'MysticMeow', 'CyberClaw', 'RainbowPurr',
+  'FrostFang', 'BlazePaw', 'SpiritWhisker', 'MoonlightMittens', 'SunsetScratch',
+  'NightShade', 'CrystalClaw', 'VelvetPaws', 'GoldenWhisker', 'SilverFur'
+]
+
 export const usePetStore = defineStore('pet', {
   state: () => ({
     pet: null as Pet | null,
@@ -37,7 +48,13 @@ export const usePetStore = defineStore('pet', {
     } as FoodInventory,
     battleHistory: [] as BattleHistoryEntry[],
     maxFoodCapacity: 100,
-    hasSeenEvolution: false
+    hasSeenEvolution: false,
+    petLeaderboard: [] as PetLeaderboardEntry[],
+    leaderboardSettings: {
+      simulationEnabled: true,
+      lastRefreshed: null
+    } as LeaderboardSettings,
+    aiPets: [] as PetLeaderboardEntry[]
   }),
 
   getters: {
@@ -101,6 +118,114 @@ export const usePetStore = defineStore('pet', {
       if (state.battleHistory.length === 0) return 0
       const wins = state.battleHistory.filter(b => b.result === 'win').length
       return Math.round((wins / state.battleHistory.length) * 100)
+    },
+
+    allLeaderboardPets: (state) => {
+      const pets: PetLeaderboardEntry[] = []
+      
+      if (state.leaderboardSettings.simulationEnabled) {
+        pets.push(...state.aiPets)
+      }
+      
+      if (state.pet) {
+        const deckStore = useDeckStore()
+        const bonus = deckStore.userStats.totalCardsStudied * 0.1 + 
+                     deckStore.userStats.perfectExams * 5
+        const power = calculatePetPower(state.pet, bonus)
+        const wins = state.battleHistory.filter(b => b.result === 'win').length
+        const losses = state.battleHistory.filter(b => b.result === 'lose').length
+        const totalBattles = wins + losses
+        
+        pets.push({
+          id: state.pet.id,
+          ownerName: 'You',
+          petName: state.pet.name,
+          level: state.pet.level,
+          power: power,
+          defense: state.pet.stats.defense,
+          health: state.pet.stats.health,
+          maxHealth: state.pet.stats.maxHealth,
+          evolutionStage: state.pet.evolutionStage,
+          wins,
+          losses,
+          winRate: totalBattles > 0 ? Math.round((wins / totalBattles) * 100) : 0,
+          isPlayerPet: true,
+          isAIPet: false,
+          likes: state.pet.likes
+        })
+      }
+      
+      return pets
+    },
+
+    leaderboardByLevel: (state) => {
+      const getter = usePetStore()
+      return [...getter.allLeaderboardPets].sort((a, b) => b.level - a.level)
+    },
+
+    leaderboardByPower: (state) => {
+      const getter = usePetStore()
+      return [...getter.allLeaderboardPets].sort((a, b) => b.power - a.power)
+    },
+
+    leaderboardByDefense: (state) => {
+      const getter = usePetStore()
+      return [...getter.allLeaderboardPets].sort((a, b) => b.defense - a.defense)
+    },
+
+    leaderboardByHealth: (state) => {
+      const getter = usePetStore()
+      return [...getter.allLeaderboardPets].sort((a, b) => b.health - a.health)
+    },
+
+    leaderboardByBeauty: (state) => {
+      const getter = usePetStore()
+      return [...getter.allLeaderboardPets].sort((a, b) => {
+        if (b.evolutionStage !== a.evolutionStage) {
+          return b.evolutionStage - a.evolutionStage
+        }
+        return b.likes - a.likes
+      })
+    },
+
+    topPets: (state) => {
+      const getter = usePetStore()
+      return getter.leaderboardByLevel.slice(0, 3)
+    },
+
+    getLeaderboardByCategory: (state) => {
+      return (category: LeaderboardCategory) => {
+        switch (category) {
+          case 'level': return usePetStore().leaderboardByLevel
+          case 'power': return usePetStore().leaderboardByPower
+          case 'defense': return usePetStore().leaderboardByDefense
+          case 'health': return usePetStore().leaderboardByHealth
+          case 'beauty': return usePetStore().leaderboardByBeauty
+          default: return usePetStore().leaderboardByLevel
+        }
+      }
+    },
+
+    playerRank: (state) => {
+      const getter = usePetStore()
+      const allPets = getter.leaderboardByLevel
+      const playerIndex = allPets.findIndex(p => p.isPlayerPet)
+      return {
+        rank: playerIndex >= 0 ? playerIndex + 1 : null,
+        total: allPets.length
+      }
+    },
+
+    playerRankByCategory: (state) => {
+      return (category: LeaderboardCategory) => {
+        const getter = usePetStore()
+        const pets = getter.getLeaderboardByCategory(category)
+        const playerIndex = pets.findIndex(p => p.isPlayerPet)
+        return {
+          rank: playerIndex >= 0 ? playerIndex + 1 : null,
+          total: pets.length
+        }
+      }
     }
   },
 
@@ -123,7 +248,8 @@ export const usePetStore = defineStore('pet', {
         },
         lastFed: null,
         feedingStreak: 0,
-        createdAt: new Date()
+        createdAt: new Date(),
+        likes: Math.floor(Math.random() * 50) + 10
       }
 
       this.pet = newPet
@@ -354,7 +480,93 @@ export const usePetStore = defineStore('pet', {
             console.error('Failed to load pet store:', e)
           }
         }
+        
+        this.loadLeaderboardSettings()
+        this.generateSamplePets()
       }
+    },
+
+    generateSamplePets() {
+      const pets: PetLeaderboardEntry[] = []
+      
+      for (let i = 0; i < 20; i++) {
+        const level = Math.floor(Math.random() * 75) + 5
+        const stage = calculateEvolutionStage(level) as EvolutionStage
+        
+        const baseStats: PetStats = {
+          attack: 10 + level * 3,
+          defense: 10 + level * 2,
+          health: 100 + level * 10,
+          maxHealth: 100 + level * 10
+        }
+        
+        const power = Math.round((level * 2 + baseStats.attack * 0.5 + baseStats.defense * 0.3) * STAT_MULTIPLIERS[stage])
+        
+        const totalBattles = Math.floor(Math.random() * 100) + 20
+        const winRate = Math.floor(Math.random() * 40) + 40
+        const wins = Math.round(totalBattles * (winRate / 100))
+        const losses = totalBattles - wins
+        
+        const nameIndex = Math.floor(Math.random() * OPPONENT_NAMES.length)
+        
+        pets.push({
+          id: `ai-${i}-${Date.now()}`,
+          ownerName: AI_TRAINER_NAMES[i % AI_TRAINER_NAMES.length],
+          petName: OPPONENT_NAMES[nameIndex],
+          level,
+          power,
+          defense: Math.round(baseStats.defense),
+          health: Math.round(baseStats.health),
+          maxHealth: Math.round(baseStats.maxHealth),
+          evolutionStage: stage,
+          wins,
+          losses,
+          winRate,
+          isPlayerPet: false,
+          isAIPet: true,
+          likes: Math.floor(Math.random() * 500) + 50
+        })
+      }
+      
+      this.aiPets = pets
+      this.leaderboardSettings.lastRefreshed = new Date().toISOString()
+    },
+
+    likePet(petId: string) {
+      if (this.pet && this.pet.id === petId) {
+        this.pet.likes++
+        this.saveToStorage()
+      }
+    },
+
+    refreshLeaderboard() {
+      this.generateSamplePets()
+      this.saveLeaderboardSettings()
+    },
+
+    saveLeaderboardSettings() {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pet-leaderboard-settings', JSON.stringify(this.leaderboardSettings))
+      }
+    },
+
+    loadLeaderboardSettings() {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('pet-leaderboard-settings')
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved)
+            this.leaderboardSettings = { ...this.leaderboardSettings, ...parsed }
+          } catch (e) {
+            console.error('Failed to load leaderboard settings:', e)
+          }
+        }
+      }
+    },
+
+    toggleSimulation() {
+      this.leaderboardSettings.simulationEnabled = !this.leaderboardSettings.simulationEnabled
+      this.saveLeaderboardSettings()
     },
 
     resetPetData() {
@@ -362,6 +574,7 @@ export const usePetStore = defineStore('pet', {
       this.foodInventory = { basic: 0, premium: 0, rare: 0 }
       this.battleHistory = []
       this.hasSeenEvolution = false
+      this.aiPets = []
       this.saveToStorage()
     }
   }

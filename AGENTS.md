@@ -223,8 +223,10 @@ tailwind.config.js     # Tailwind configuration
 | Deck Detail | `/deck/[id]` | View deck, add/edit cards, start study or exam |
 | Study | `/study/[id]` | Flashcard study mode with flip interaction |
 | Exam | `/exam/[id]` | Timed exam with input or multiple-choice questions |
-| Pet | `/pet` | Pet management, feeding, evolution |
+| Pet | `/pet` | Pet management, feeding, evolution (includes mini leaderboard) |
 | Battle | `/battle` | PvE battle arena with quiz-based combat |
+| Leaderboard | `/leaderboard` | Full pet leaderboard with multiple ranking categories |
+| Settings | `/settings` | App settings including simulation toggle for AI pets |
 
 ## Gamification System
 
@@ -453,6 +455,8 @@ Max inventory capacity: 100 (can be upgraded later)
 | `EvolutionModal.vue` | Evolution celebration animation |
 | `BattleArena.vue` | Main battle UI with HP bars |
 | `BattleLog.vue` | Battle history entries |
+| `PetLeaderboardMini.vue` | Top 3 pets display for /pet page |
+| `PetLeaderboardFull.vue` | Full leaderboard with category tabs |
 
 ### Types (`types/pet.ts`)
 
@@ -467,9 +471,65 @@ interface Pet {
   stats: { attack, defense, health, maxHealth }
   lastFed: Date | null
   feedingStreak: number
+  likes: number  // For beauty ranking
 }
 
 type FoodType = 'basic' | 'premium' | 'rare'
 
 type BattleDifficulty = 'easy' | 'medium' | 'hard'
+
+type LeaderboardCategory = 'level' | 'power' | 'defense' | 'health' | 'beauty'
+
+interface PetLeaderboardEntry {
+  id: string
+  ownerName: string
+  petName: string
+  level: number
+  power: number
+  defense: number
+  health: number
+  maxHealth: number
+  evolutionStage: EvolutionStage
+  wins: number
+  losses: number
+  winRate: number
+  isPlayerPet: boolean
+  isAIPet: boolean
+  likes: number
+}
+
+interface LeaderboardSettings {
+  simulationEnabled: boolean
+  lastRefreshed: string | null
+}
+```
+
+### Pet Leaderboard System
+
+The pet leaderboard allows players to compare their pets with others using multiple ranking categories.
+
+**Ranking Categories:**
+| Category | Sort By | Description |
+|----------|---------|-------------|
+| Level | Level DESC | Highest pet level |
+| Power | Power DESC | Combat strength (calculated) |
+| Defense | Defense DESC | Defensive stats |
+| Health | Health DESC | Maximum HP |
+| Beauty | Evolution > Likes DESC | Based on evolution stage and user likes |
+
+**Power Calculation:**
+```
+power = (level * 2 + attack * 0.5 + defense * 0.3 + studyBonus) * evolutionMultiplier
+```
+
+**AI Simulation:**
+- 20 AI pets generated with fake data on each session
+- Names: "Shadow Fang", "Fire Claw", "Ice Whisker", etc.
+- Levels: 5-80 (random)
+- Toggle on/off in `/settings` page
+- Leaderboard regenerates each session (no persistence)
+
+**Components:**
+- `PetLeaderboardMini.vue` - Shows top 3 pets on `/pet` page
+- `PetLeaderboardFull.vue` - Full table with category tabs on `/leaderboard` page
 ```

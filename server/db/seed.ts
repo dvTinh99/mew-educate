@@ -4,8 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import bcrypt from 'bcryptjs'
 
 // const db = await getDb()
-console.log('db', db);
-const SYSTEM_USER_ID = 'system'
+const SYSTEM_USER_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
 
 interface CardData {
   front: string

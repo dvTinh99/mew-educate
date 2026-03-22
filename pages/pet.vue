@@ -162,21 +162,9 @@
             <FoodInventory
               :inventory="petStore.foodInventory"
               :max-capacity="petStore.maxFoodCapacity"
+              :interactive="true"
+              @feed="handleFeedPet"
             />
-            <AppButton 
-              variant="primary" 
-              size="lg"
-              class="mt-6 w-full"
-              :disabled="!petStore.canFeed"
-              @click="showFeedModal = true"
-            >
-              <span class="flex items-center justify-center gap-2 text-xl py-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Feed {{ pet.name }}
-              </span>
-            </AppButton>
           </div>
         </div>
 
@@ -257,11 +245,6 @@
         </div>
       </div>
 
-      <FeedPetModal
-        v-model="showFeedModal"
-        @fed="handleFed"
-      />
-
       <EvolutionModal
         :show="showEvolutionModal"
         :pet-name="pet?.name ?? 'Whiskers'"
@@ -293,7 +276,6 @@ import { getXPForNextLevel, type EvolutionStage, type PetCustomization } from '~
 import PetDisplay from '~/components/PetDisplay.vue'
 import PetStats from '~/components/PetStats.vue'
 import FoodInventory from '~/components/FoodInventory.vue'
-import FeedPetModal from '~/components/FeedPetModal.vue'
 import EvolutionModal from '~/components/EvolutionModal.vue'
 import CustomizePetModal from '~/components/CustomizePetModal.vue'
 import AppButton from '~/components/AppButton.vue'
@@ -302,7 +284,6 @@ import PetLeaderboardMini from '~/components/PetLeaderboardMini.vue'
 const router = useRouter()
 const petStore = usePetStore()
 
-const showFeedModal = ref(false)
 const showEvolutionModal = ref(false)
 const showCustomizeModal = ref(false)
 const evolutionOldStage = ref<EvolutionStage>(1)
@@ -344,6 +325,16 @@ const adoptPet = () => {
   }
 }
 
+const handleFeedPet = (foodType: 'basic' | 'premium' | 'rare') => {
+  const result = petStore.feedPet(foodType)
+  if (result?.evolved && pet.value) {
+    evolutionOldStage.value = result.newStage ? result.newStage - 1 : pet.value.evolutionStage
+    evolutionNewStage.value = pet.value.evolutionStage
+    petStore.hasSeenEvolution = true
+    showEvolutionModal.value = true
+  }
+}
+
 const startRename = () => {
   newPetName.value = pet.value?.name ?? ''
   isRenaming.value = true
@@ -363,15 +354,6 @@ const confirmRename = () => {
 const cancelRename = () => {
   isRenaming.value = false
   newPetName.value = ''
-}
-
-const handleFed = (result: { leveled: boolean; evolved: boolean }) => {
-  if (result.evolved && pet.value) {
-    evolutionOldStage.value = pet.value.evolutionStage
-    evolutionNewStage.value = pet.value.evolutionStage
-    petStore.hasSeenEvolution = true
-    showEvolutionModal.value = true
-  }
 }
 
 const handleCustomizationSave = (customization: { color: string; accent: string; accessories: any }) => {

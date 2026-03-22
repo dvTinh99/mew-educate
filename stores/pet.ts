@@ -497,6 +497,36 @@ export const usePetStore = defineStore('pet', {
       }
     },
 
+    loadFromServer(data: any) {
+      if (data.pet) {
+        this.pet = {
+          ...data.pet,
+          lastFed: data.pet.lastFed ? new Date(data.pet.lastFed) : null,
+          createdAt: data.pet.createdAt ? new Date(data.pet.createdAt) : new Date(),
+        }
+      } else {
+        this.pet = null
+      }
+      
+      if (data.food) {
+        this.foodInventory = {
+          basic: data.food.basic || 0,
+          premium: data.food.premium || 0,
+          rare: data.food.rare || 0,
+        }
+        this.maxFoodCapacity = data.food.maxCapacity || 100
+      }
+      
+      if (data.battleHistory) {
+        this.battleHistory = data.battleHistory.map((h: any) => ({
+          ...h,
+          date: h.date ? new Date(h.date) : new Date(),
+        }))
+      }
+      
+      this.saveToStorage()
+    },
+
     generateSamplePets() {
       const pets: PetLeaderboardEntry[] = []
       

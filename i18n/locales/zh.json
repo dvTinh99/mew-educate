@@ -12,7 +12,8 @@
     "logout": "退出登录",
     "features": "功能",
     "howItWorks": "如何使用",
-    "petSystem": "宠物系统"
+    "petSystem": "宠物系统",
+    "goToProfile": "前往个人资料"
   },
   "landing": {
     "hero": {

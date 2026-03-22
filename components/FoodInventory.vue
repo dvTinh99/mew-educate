@@ -13,9 +13,13 @@
         :key="food.type"
         type="button"
         class="food-item"
-        :class="{ 'food-empty': inventory[food.type] === 0, 'food-selected': selectedType === food.type }"
+        :class="{ 
+          'food-empty': inventory[food.type] === 0, 
+          'food-selected': selectedType === food.type,
+          'food-interactive': interactive
+        }"
         :disabled="inventory[food.type] === 0 || disabled"
-        @click="$emit('select', food.type)"
+        @click="handleClick(food.type)"
       >
         <div class="food-icon" :class="food.type">
           <component :is="food.icon" class="w-8 h-8" />
@@ -26,6 +30,9 @@
         </div>
         <div class="food-xp">
           +{{ food.xpValue }} XP
+        </div>
+        <div v-if="interactive && inventory[food.type] > 0" class="food-feed-hint">
+          Click to feed
         </div>
       </button>
     </div>
@@ -55,16 +62,27 @@ interface Props {
   maxCapacity: number
   selectedType?: FoodType | null
   disabled?: boolean
+  interactive?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   selectedType: null,
-  disabled: false
+  disabled: false,
+  interactive: false
 })
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'select', type: FoodType): void
+  (e: 'feed', type: FoodType): void
 }>()
+
+const handleClick = (type: FoodType) => {
+  if (props.interactive) {
+    emit('feed', type)
+  } else {
+    emit('select', type)
+  }
+}
 
 const totalFood = computed(() => {
   return props.inventory.basic + props.inventory.premium + props.inventory.rare
@@ -129,6 +147,22 @@ const foodTypes = computed(() => [
 
 .food-item:not(.food-empty):hover {
   @apply transform scale-105;
+}
+
+.food-interactive:not(.food-empty) {
+  @apply cursor-pointer;
+}
+
+.food-interactive:not(.food-empty):hover {
+  @apply border-primary-400 bg-primary-50;
+}
+
+.food-feed-hint {
+  @apply text-xs text-primary-600 font-medium mt-2 opacity-0 transition-opacity;
+}
+
+.food-interactive:not(.food-empty):hover .food-feed-hint {
+  @apply opacity-100;
 }
 
 .food-selected {

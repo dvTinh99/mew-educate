@@ -307,6 +307,60 @@ export const useDeckStore = defineStore('deck', {
       }
     },
 
+    loadFromServer(data: any) {
+      if (data.decks) {
+        this.decks = data.decks.map((deck: any) => ({
+          ...deck,
+          createdAt: deck.createdAt ? new Date(deck.createdAt) : new Date(),
+          lastStudied: deck.lastStudied ? new Date(deck.lastStudied) : undefined,
+        }))
+      }
+      
+      if (data.examResults) {
+        this.examResults = {}
+        for (const result of data.examResults) {
+          const deckId = result.deckId
+          if (!this.examResults[deckId]) {
+            this.examResults[deckId] = []
+          }
+          this.examResults[deckId].push({
+            ...result,
+            completedAt: result.completedAt ? new Date(result.completedAt) : new Date(),
+          })
+        }
+      }
+      
+      if (data.stats) {
+        this.userStats = {
+          totalXP: data.stats.totalXP || 0,
+          level: data.stats.level || 1,
+          currentStreak: data.stats.currentStreak || 0,
+          longestStreak: data.stats.longestStreak || 0,
+          lastStudyDate: data.stats.lastStudyDate || '',
+          totalStudyTime: data.stats.totalStudyTime || 0,
+          totalCardsStudied: data.stats.totalCardsStudied || 0,
+          totalExamsTaken: data.stats.totalExamsTaken || 0,
+          perfectExams: data.stats.perfectExams || 0,
+          unlockedBadges: data.unlockedBadges?.map((b: any) => b.id) || [],
+          completedChallenges: [],
+          dailyChallengesCompleted: data.stats.dailyChallengesCompleted || 0,
+          weeklyChallengesCompleted: data.stats.weeklyChallengesCompleted || 0,
+          onboardingCompleted: data.stats.onboardingCompleted || false,
+          createdAt: data.stats.createdAt || new Date().toISOString(),
+        }
+      }
+      
+      if (data.dailyChallenges) {
+        this.dailyChallenges = data.dailyChallenges.map((c: any) => ({
+          ...c,
+          date: c.date ? new Date(c.date) : new Date(),
+          expiresAt: c.expiresAt ? new Date(c.expiresAt) : new Date(),
+        }))
+      }
+      
+      this.saveToStorage()
+    },
+
     async loadPrebuiltDecks() {
       try {
         const response = await $fetch('/api/decks?prebuilt=true')

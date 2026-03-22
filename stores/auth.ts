@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { useDeckStore } from '~/stores/deck'
+import { usePetStore } from '~/stores/pet'
 
 interface User {
   id: string
@@ -10,6 +12,19 @@ interface User {
 interface AuthResponse {
   user: User
   token: string
+}
+
+interface UserDataResponse {
+  userId: string
+  stats: any
+  food: any
+  pet: any
+  decks: any[]
+  examResults: any[]
+  battleHistory: any[]
+  dailyChallenges: any[]
+  unlockedBadges: any[]
+  leaderboard: any
 }
 
 async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
@@ -34,9 +49,30 @@ export const useAuthStore = defineStore('auth', {
     isLoggedIn: false,
     user: null as User | null,
     token: null as string | null,
+    isLoading: false,
   }),
 
   actions: {
+    async loadUserData() {
+      if (!this.isLoggedIn) return
+      
+      this.isLoading = true
+      try {
+        const data = await apiFetch<UserDataResponse>('/api/user/data')
+        
+        const deckStore = useDeckStore()
+        const petStore = usePetStore()
+        
+        deckStore.loadFromServer(data)
+        petStore.loadFromServer(data)
+        
+      } catch (error) {
+        console.error('Failed to load user data:', error)
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     async login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
       try {
         const response = await apiFetch<AuthResponse>('/api/auth/login', {
@@ -48,6 +84,9 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.user
         this.token = response.token
         this.saveToStorage()
+        
+        await this.loadUserData()
+        
         return { success: true }
       } catch (error: any) {
         console.error('Login error:', error)
@@ -69,6 +108,9 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.user
         this.token = response.token
         this.saveToStorage()
+        
+        await this.loadUserData()
+        
         return { success: true }
       } catch (error: any) {
         console.error('Register error:', error)
@@ -89,7 +131,10 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggedIn = false
       this.user = null
       this.token = null
-      this.saveToStorage()
+      
+      localStorage.removeItem('flashcard-decks')
+      localStorage.removeItem('pet-store')
+      localStorage.removeItem('auth-store')
     },
 
     async checkAuth(): Promise<boolean> {
@@ -107,6 +152,9 @@ export const useAuthStore = defineStore('auth', {
 
         const response = await apiFetch<{ user: User }>('/api/auth/me')
         this.user = response.user
+        
+        await this.loadUserData()
+        
         return true
       } catch (error) {
         console.error('Auth check failed:', error)

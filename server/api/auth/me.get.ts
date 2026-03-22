@@ -5,7 +5,7 @@ import { users, userStats, foodInventory } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 
 interface TokenPayload {
-  id: number
+  id: string
   email: string
   exp: number
 }

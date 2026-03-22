@@ -12,7 +12,8 @@
     "logout": "Logout",
     "features": "Features",
     "howItWorks": "How It Works",
-    "petSystem": "Pet System"
+    "petSystem": "Pet System",
+    "goToProfile": "Go to Profile"
   },
   "landing": {
     "hero": {

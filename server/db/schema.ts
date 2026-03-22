@@ -27,7 +27,7 @@ export const challengeTypeEnum = pgEnum('challenge_type', ['study', 'exam', 'car
 // ============ USERS (synced with NextAuth) ============
 
 export const users = pgTable('users', {
-  id: text('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
   password: text('password'),
@@ -43,13 +43,13 @@ export const users = pgTable('users', {
 
 export const sessions = pgTable('sessions', {
   sessionToken: text('session_token').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   expires: timestamp('expires', { withTimezone: true }).notNull(),
 })
 
 export const accounts = pgTable('accounts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   type: text('type').notNull(),
   provider: text('provider').notNull(),
   providerAccountId: text('provider_account_id').notNull(),
@@ -74,7 +74,7 @@ export const verificationTokens = pgTable('verification_tokens', {
 
 export const userStats = pgTable('user_stats', {
   id: serial('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
   totalXP: integer('total_xp').default(0).notNull(),
   level: integer('level').default(1).notNull(),
   currentStreak: integer('current_streak').default(0).notNull(),
@@ -95,7 +95,7 @@ export const userStats = pgTable('user_stats', {
 
 export const decks = pgTable('decks', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   category: categoryEnum('category'),
@@ -116,6 +116,8 @@ export const cards = pgTable('cards', {
   deckId: text('deck_id').notNull().references(() => decks.id, { onDelete: 'cascade' }),
   front: text('front').notNull(),
   back: text('back').notNull(),
+  frontLang: text('front_lang').default('en'),
+  backLang: text('back_lang').default('en'),
   hint: text('hint'),
   reviewCount: integer('review_count').default(0).notNull(),
   lastReviewed: timestamp('last_reviewed', { withTimezone: true }),
@@ -126,7 +128,7 @@ export const cards = pgTable('cards', {
 
 export const examResults = pgTable('exam_results', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   deckId: text('deck_id').notNull().references(() => decks.id, { onDelete: 'cascade' }),
   score: integer('score').notNull(),
   correct: integer('correct').notNull(),
@@ -150,7 +152,7 @@ export const examResults = pgTable('exam_results', {
 
 export const pets = pgTable('pets', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
   name: text('name').notNull(),
   species: speciesEnum('species').default('cat').notNull(),
   level: integer('level').default(1).notNull(),
@@ -172,7 +174,7 @@ export const pets = pgTable('pets', {
 
 export const foodInventory = pgTable('food_inventory', {
   id: serial('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
   basic: integer('basic').default(10).notNull(),
   premium: integer('premium').default(2).notNull(),
   rare: integer('rare').default(0).notNull(),
@@ -183,7 +185,7 @@ export const foodInventory = pgTable('food_inventory', {
 
 export const battleHistory = pgTable('battle_history', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   opponentId: text('opponent_id'),
   opponentName: text('opponent_name'),
   difficulty: battleDifficultyEnum('difficulty'),
@@ -197,7 +199,7 @@ export const battleHistory = pgTable('battle_history', {
 
 export const dailyChallenges = pgTable('daily_challenges', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   type: challengeTypeEnum('type').notNull(),
   title: text('title').notNull(),
   description: text('description'),
@@ -221,7 +223,7 @@ export const badges = pgTable('badges', {
 })
 
 export const userBadges = pgTable('user_badges', {
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   badgeId: text('badge_id').notNull().references(() => badges.id),
   unlockedAt: timestamp('unlocked_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
@@ -232,7 +234,7 @@ export const userBadges = pgTable('user_badges', {
 
 export const leaderboard = pgTable('leaderboard', {
   id: serial('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
   petName: text('pet_name'),
   level: integer('level').default(0).notNull(),
   power: integer('power').default(0).notNull(),

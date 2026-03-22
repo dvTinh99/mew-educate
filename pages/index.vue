@@ -31,18 +31,28 @@
             {{ $t('nav.petSystem') }}
           </button>
           <div class="flex items-center gap-3">
-            <button 
-              class="px-6 py-3 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
-              @click="showLoginModal = true"
-            >
-              {{ $t('nav.login') }}
-            </button>
-            <button 
-              class="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl"
-              @click="showRegisterModal = true"
-            >
-              {{ $t('nav.register') }}
-            </button>
+            <template v-if="authStore.isLoggedIn">
+              <button 
+                class="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl"
+                @click="router.push('/profile')"
+              >
+                {{ $t('nav.profile') || 'Profile' }}
+              </button>
+            </template>
+            <template v-else>
+              <button 
+                class="px-6 py-3 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
+                @click="showLoginModal = true"
+              >
+                {{ $t('nav.login') }}
+              </button>
+              <button 
+                class="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl"
+                @click="showRegisterModal = true"
+              >
+                {{ $t('nav.register') }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
@@ -62,9 +72,9 @@
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
               class="px-10 py-5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold text-xl rounded-2xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-xl hover:shadow-2xl transform hover:scale-105"
-              @click="showRegisterModal = true"
+              @click="authStore.isLoggedIn ? router.push('/profile') : showRegisterModal = true"
             >
-              {{ $t('landing.hero.cta') }}
+              {{ authStore.isLoggedIn ? ($t('nav.goToProfile') || 'Go to Profile') : $t('landing.hero.cta') }}
             </button>
             <button 
               class="px-10 py-5 bg-white border-2 border-gray-200 text-gray-700 font-bold text-xl rounded-2xl hover:border-primary-300 hover:bg-primary-50 transition-all"
@@ -188,9 +198,9 @@
           </p>
           <button 
             class="px-12 py-5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold text-xl rounded-2xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-xl hover:shadow-2xl transform hover:scale-105"
-            @click="showRegisterModal = true"
+            @click="authStore.isLoggedIn ? router.push('/profile') : showRegisterModal = true"
           >
-            {{ $t('landing.cta.button') }}
+            {{ authStore.isLoggedIn ? ($t('nav.goToProfile') || 'Go to Profile') : $t('landing.cta.button') }}
           </button>
         </div>
       </div>
@@ -263,9 +273,6 @@ const handleAuthSuccess = () => {
 
 onMounted(() => {
   authStore.loadFromStorage()
-  if (authStore.isLoggedIn) {
-    router.push('/profile')
-  }
 })
 
 useHead({

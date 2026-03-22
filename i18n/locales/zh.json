@@ -150,5 +150,32 @@
     "health": "生命",
     "maxHealth": "最大生命",
     "battlePower": "战斗力"
+  },
+  "inquiry": {
+    "title": "发送反馈",
+    "category": "类别",
+    "selectCategory": "选择类别",
+    "categories": {
+      "bug": "错误报告",
+      "feature": "功能请求",
+      "question": "一般问题",
+      "other": "其他"
+    },
+    "subject": "主题",
+    "subjectPlaceholder": "简要描述您的问题",
+    "message": "内容",
+    "messagePlaceholder": "详细描述您的问题或建议...",
+    "email": "邮箱",
+    "emailPlaceholder": "your@email.com",
+    "submit": "发送",
+    "submitting": "发送中...",
+    "success": "反馈发送成功！",
+    "error": "发送失败，请重试。"
+  },
+  "common": {
+    "cancel": "取消",
+    "close": "关闭",
+    "save": "保存",
+    "loading": "加载中..."
   }
 }

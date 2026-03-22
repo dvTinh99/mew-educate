@@ -150,5 +150,32 @@
     "health": "Máu",
     "maxHealth": "Máu Tối Đa",
     "battlePower": "Sức Mạnh"
+  },
+  "inquiry": {
+    "title": "Gửi Phản Hồi",
+    "category": "Danh Mục",
+    "selectCategory": "Chọn danh mục",
+    "categories": {
+      "bug": "Báo Lỗi",
+      "feature": "Yêu Cầu Tính Năng",
+      "question": "Câu Hỏi Chung",
+      "other": "Khác"
+    },
+    "subject": "Tiêu Đề",
+    "subjectPlaceholder": "Tóm tắt ngắn gọn",
+    "message": "Nội Dung",
+    "messagePlaceholder": "Mô tả chi tiết vấn đề hoặc đề xuất của bạn...",
+    "email": "Email",
+    "emailPlaceholder": "email của bạn",
+    "submit": "Gửi",
+    "submitting": "Đang gửi...",
+    "success": "Gửi phản hồi thành công!",
+    "error": "Gửi phản hồi thất bại. Vui lòng thử lại."
+  },
+  "common": {
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "save": "Lưu",
+    "loading": "Đang tải..."
   }
 }

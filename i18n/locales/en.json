@@ -150,5 +150,32 @@
     "health": "Health",
     "maxHealth": "Max Health",
     "battlePower": "Battle Power"
+  },
+  "inquiry": {
+    "title": "Send Inquiry",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "categories": {
+      "bug": "Bug Report",
+      "feature": "Feature Request",
+      "question": "General Question",
+      "other": "Other"
+    },
+    "subject": "Subject",
+    "subjectPlaceholder": "Brief summary of your inquiry",
+    "message": "Message",
+    "messagePlaceholder": "Describe your issue or suggestion in detail...",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "submit": "Send",
+    "submitting": "Sending...",
+    "success": "Inquiry sent successfully!",
+    "error": "Failed to send inquiry. Please try again."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "loading": "Loading..."
   }
 }

@@ -9,6 +9,12 @@
       >
         <div 
           class="modal-content"
+          :class="{
+            'modal-sm': size === 'sm',
+            'modal-md': size === 'md',
+            'modal-lg': size === 'lg',
+            'modal-full': size === 'full'
+          }"
           role="dialog"
           aria-modal="true"
           :aria-labelledby="titleId"

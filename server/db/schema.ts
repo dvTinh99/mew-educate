@@ -24,6 +24,8 @@ export const gradeEnum = pgEnum('grade', ['A', 'B', 'C', 'D', 'F'])
 
 export const challengeTypeEnum = pgEnum('challenge_type', ['study', 'exam', 'cards'])
 
+export const inquiryCategoryEnum = pgEnum('inquiry_category', ['bug', 'feature', 'question', 'other'])
+
 // ============ USERS (synced with NextAuth) ============
 
 export const users = pgTable('users', {
@@ -235,6 +237,19 @@ export const userBadges = pgTable('user_badges', {
 }, (table) => ({
   compositePk: primaryKey({ columns: [table.userId, table.badgeId] }),
 }))
+
+// ============ INQUIRIES ============
+
+export const inquiries = pgTable('inquiries', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  email: text('email').notNull(),
+  category: inquiryCategoryEnum('category').notNull(),
+  subject: text('subject').notNull(),
+  message: text('message').notNull(),
+  status: text('status').default('pending'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
 
 // ============ LEADERBOARD ============
 

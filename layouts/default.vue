@@ -99,6 +99,9 @@
     </main>
 
     <MobileNavbar />
+    <FloatingInquiryButton @click="showInquiryModal = true" />
+
+    <InquiryModal v-model="showInquiryModal" />
 
     <footer class="app-footer bg-white border-t-2 border-gray-200 py-4 sm:py-6 mt-auto hidden md:block">
       <div class="container mx-auto px-4 text-center">
@@ -116,11 +119,14 @@ import { usePetStore } from '~/stores/pet'
 import { useAuthStore } from '~/stores/auth'
 import { useRouter } from 'vue-router'
 import MobileNavbar from '~/components/MobileNavbar.vue'
+import FloatingInquiryButton from '~/components/FloatingInquiryButton.vue'
+import InquiryModal from '~/components/InquiryModal.vue'
 
 const deckStore = useDeckStore()
 const petStore = usePetStore()
 const authStore = useAuthStore()
 const router = useRouter()
+const showInquiryModal = ref(false)
 
 onMounted(async () => {
   deckStore.loadFromStorage()

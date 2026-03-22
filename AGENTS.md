@@ -8,8 +8,8 @@ This document provides guidance for AI agents working in this repository.
 - **Language**: TypeScript
 - **Styling**: TailwindCSS with custom component classes
 - **State Management**: Pinia
-- **Database**: Neon PostgreSQL with Drizzle ORM (server-side only)
-- **i18n**: @nuxtjs/i18n for multi-language support
+- **Database**: PostgreSQL (local Docker or Neon) with Drizzle ORM
+- **i18n**: @nuxtjs/i18n for multi-language support (en, vi, zh)
 
 ## Build Commands
 
@@ -23,15 +23,36 @@ npm run preview      # Preview production build
 npm run generate     # Generate static site
 
 # Database
-npm run db:migrate   # Push schema to Neon (drizzle-kit push)
+npm run db:migrate   # Push schema to database (drizzle-kit push)
+npm run db:seed      # Seed database from JSON files (tsx)
 
-# Type Checking (Nuxt includes TS in build process)
-# No explicit type-check script - run build to check
+# Docker (local PostgreSQL)
+docker compose up -d          # Start local PostgreSQL
+docker compose down           # Stop PostgreSQL
 ```
 
 ## Testing
 
 **Not configured.** No test framework set up. If adding tests, use Vitest with native Vite integration for Nuxt 3.
+
+## Environment Setup
+
+### Local Development (.env)
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/flashcard
+AUTH_SECRET=your-secret-here
+NUXT_AUTH_SECRET=your-secret-here
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+NUXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### Google OAuth Setup
+1. Go to https://console.cloud.google.com/
+2. Enable "Google+ API" in APIs & Services
+3. Create OAuth Client ID (Web application)
+4. Add redirect URI: `http://localhost:3000/api/auth/google/callback`
+5. Copy credentials to `.env`
 
 ## Code Style Guidelines
 
@@ -90,6 +111,8 @@ interface Card {
   id: string
   front: string
   back: string
+  frontLang?: 'en' | 'vi' | 'zh'
+  backLang?: 'en' | 'vi' | 'zh'
   createdAt: Date
 }
 ```
@@ -121,17 +144,6 @@ loadFromStorage() {
 - Use `aria-modal="true"` on modals
 - Support keyboard: Enter/Space for buttons, Escape for modals
 
-```vue
-<div
-  role="button"
-  tabindex="0"
-  aria-label="Close modal"
-  @click="close"
-  @keydown.enter="close"
-  @keydown.escape="close"
-/>
-```
-
 ### CSS & Tailwind
 
 - Global styles in `assets/css/main.css` using `@layer components`
@@ -142,17 +154,58 @@ loadFromStorage() {
 ## Directory Structure
 
 ```
-assets/css/main.css    # Global styles, Tailwind imports
-components/            # Vue components (PascalCase)
-composables/           # Reusable composition functions
-i18n/locales/          # Translation files (en.json, vi.json, zh.json)
-layouts/               # Page layouts (default.vue, landing.vue)
-pages/                 # Route pages
-server/api/            # Nuxt server routes (auth, pets, decks, leaderboard)
-server/db/             # Drizzle schema and connection
-stores/                # Pinia stores (deck.ts, pet.ts, auth.ts)
-types/                 # TypeScript types
-public/data/           # Pre-built deck JSON files
+assets/css/main.css       # Global styles, Tailwind imports
+components/              # Vue components (PascalCase)
+  AbilityPointAllocator.vue   # Pet ability points UI
+  FloatingInquiryButton.vue   # Floating inquiry button
+  FoodInventory.vue           # Pet food inventory
+  InquiryModal.vue            # Send inquiry form
+  LanguageSwitcher.vue        # Language selector with flags
+  PetDisplay.vue              # Pet visualization
+  PetStats.vue                # Pet stats display
+  PetLeaderboardMini.vue      # Mini leaderboard widget
+  PetLeaderboardFull.vue      # Full leaderboard page
+  EvolutionModal.vue          # Pet evolution modal
+  CustomizePetModal.vue       # Pet customization
+  CardModal.vue               # Card create/edit modal
+  BattleArena.vue             # Battle game component
+  Flashcard.vue               # Flashcard flip component
+  ExamCard.vue               # Exam card component
+  ExamResults.vue             # Exam results display
+  Modal.vue                  # Base modal component
+  AppButton.vue              # Reusable button
+composables/              # Reusable composition functions
+i18n/locales/             # Translation files (en.json, vi.json, zh.json)
+layouts/                  # Page layouts (default.vue, landing.vue)
+pages/                    # Route pages
+  index.vue                # Landing page
+  profile.vue              # User profile
+  pet.vue                  # Pet management
+  battle.vue               # Battle arena
+  exam/[id].vue            # Exam page
+  deck/[id].vue            # Deck study page
+  leaderboard.vue          # Leaderboard
+  settings.vue            # Settings
+server/api/               # Nuxt server routes
+  auth/
+    register.post.ts      # User registration
+    login.post.ts         # User login
+    logout.post.ts        # User logout
+    me.get.ts             # Get current user
+    google.get.ts         # Google OAuth init
+    google/callback.get.ts # Google OAuth callback
+  user/
+    data.get.ts           # Load user data from DB
+    data.put.ts           # Save user data to DB
+  inquiries/
+    index.post.ts         # Submit inquiry
+  decks/                   # Deck CRUD APIs
+  pets/                    # Pet APIs
+  leaderboard/              # Leaderboard API
+server/db/
+  schema.ts               # Drizzle ORM schema
+  index.ts                # Database connection (auto-detects Neon vs local)
+docker-compose.yml        # Local PostgreSQL setup
 ```
 
 ## Key Patterns
@@ -168,16 +221,49 @@ public/data/           # Pre-built deck JSON files
 - Return reactive state and functions
 - No side effects at module level (except config)
 
-### Database Notes
+### User Data Isolation
 
-- `users.id`: Integer type, manual ID generation
-- Foreign keys: `text` type for `user_id`
-- Primary keys: Use `uuidv4()` for UUIDs
-- Neon results: Access via `.rows` array
+- User data is stored server-side in PostgreSQL
+- `stores/auth.ts` loads user data via `loadUserData()` on login
+- Data saved via PUT `/api/user/data` endpoint
+- Each user sees only their own data by `userId`
+
+### Database Schema Notes
+
+- `users.id`: UUID type with `defaultRandom()`
+- Foreign keys: `uuid` type for `user_id`
+- Cards: Support `frontLang` and `backLang` (en, vi, zh)
+- Pets: Support `abilityPoints` and `spentAbilityPoints`
+- Inquiries: Store bug reports, feature requests, questions
 
 ### API Routes
 
-- Use Nuxt server routes in `server/api/`
-- Auth: `/api/auth/register`, `/api/auth/login`, `/api/auth/me`
-- Pets: `/api/pets`, `/api/pets/create`, `/api/pets/feed`
-- Decks: `/api/decks`, `/api/decks/:id`
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/register` | POST | Register new user |
+| `/api/auth/login` | POST | Login with email/password |
+| `/api/auth/logout` | POST | Logout user |
+| `/api/auth/me` | GET | Get current user info |
+| `/api/auth/google` | GET | Initiate Google OAuth |
+| `/api/auth/google/callback` | GET | Google OAuth callback |
+| `/api/user/data` | GET | Load all user data |
+| `/api/user/data` | PUT | Save all user data |
+| `/api/inquiries` | POST | Submit inquiry |
+| `/api/decks` | GET/POST | List/create decks |
+| `/api/decks/:id` | GET/PUT/DELETE | Deck operations |
+| `/api/pets` | GET | Get user pet |
+| `/api/pets/feed` | PUT | Feed pet |
+| `/api/pets/create` | POST | Create pet |
+
+### Pet Ability Points System
+
+- Pets earn 2 ability points per level up
+- Points can be allocated to: Attack, Defense, Health
+- Health: 1 point = 2 HP
+- Reset allowed at levels 10, 20, 30, ... (when all points spent)
+
+### Card Language Selection
+
+- Each card has `frontLang` and `backLang` (en, vi, zh)
+- Default: English for both
+- Allows mixed language cards (e.g., Chinese front, Vietnamese back)

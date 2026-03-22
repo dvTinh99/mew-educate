@@ -1,4 +1,4 @@
-import { defineEventHandler, createError } from 'h3'
+import { defineEventHandler, createError, getQuery } from 'h3'
 import { db } from '../../db'
 import { decks, cards } from '../../db/schema'
 import { eq, and } from 'drizzle-orm'
@@ -6,10 +6,9 @@ import { requireAuth } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const authUser = requireAuth(event)
-  const query = event.context.params || {}
+  const query = getQuery(event) || {}
 
-  const isPreBuilt = query.prebuilt === 'true'
-
+  const isPreBuilt = query.prebuilt == 'true'
   const userDecks = await db
     .select()
     .from(decks)
@@ -35,6 +34,9 @@ export default defineEventHandler(async (event) => {
       }
     })
   )
+
+  console.log('decksWithCards', decksWithCards);
+  
 
   return {
     decks: decksWithCards,

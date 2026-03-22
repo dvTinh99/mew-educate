@@ -8,7 +8,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "db:migrate": "drizzle-kit push",
+    "db:seed": "npx tsx --env-file=.env server/db/seed.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

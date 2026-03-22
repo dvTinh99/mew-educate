@@ -221,7 +221,6 @@ export const badges = pgTable('badges', {
 })
 
 export const userBadges = pgTable('user_badges', {
-  id: serial('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   badgeId: text('badge_id').notNull().references(() => badges.id),
   unlockedAt: timestamp('unlocked_at', { withTimezone: true }).defaultNow().notNull(),

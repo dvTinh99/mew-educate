@@ -12,9 +12,9 @@ export default defineNuxtConfig({
 
   i18n: {
     locales: [
-      { code: 'en', name: 'English', file: 'en.json' },
-      { code: 'vi', name: 'Tiếng Việt', file: 'vi.json' },
-      { code: 'zh', name: '简体中文', file: 'zh.json' }
+      { code: 'en', name: 'English', flag: '🇺🇸', file: 'en.json' },
+      { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳', file: 'vi.json' },
+      { code: 'zh', name: '简体中文', flag: '🇨🇳', file: 'zh.json' }
     ],
     defaultLocale: 'en',
     lazy: true,

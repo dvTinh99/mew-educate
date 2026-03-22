@@ -10,7 +10,7 @@
         :key="locale.code"
         :value="locale.code"
       >
-        {{ locale.name }}
+        {{ locale.flag }}
       </option>
     </select>
     <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -20,13 +20,20 @@
 </template>
 
 <script setup lang="ts">
+interface Locale {
+  code: string
+  name: string
+  flag: string
+  file: string
+}
+
 const { locale, locales, setLocale } = useI18n()
 
 const currentLocale = ref(locale.value)
 
 const availableLocales = computed(() => {
-  return locales.value.filter((l): l is { code: string; name: string } => 
-    typeof l === 'object' && 'code' in l && 'name' in l
+  return locales.value.filter((l): l is Locale => 
+    typeof l === 'object' && 'code' in l && 'flag' in l
   )
 })
 

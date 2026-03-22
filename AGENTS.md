@@ -8,8 +8,8 @@ This document provides guidance for AI agents working in this repository.
 - **Language**: TypeScript
 - **Styling**: TailwindCSS with custom component classes
 - **State Management**: Pinia
-- **Module Type**: ESM
 - **Database**: Neon PostgreSQL with Drizzle ORM (server-side only)
+- **i18n**: @nuxtjs/i18n for multi-language support
 
 ## Build Commands
 
@@ -20,49 +20,27 @@ npm run dev          # Start dev server at http://localhost:3000
 # Production
 npm run build        # Build for production
 npm run preview      # Preview production build
-
-# Other
 npm run generate     # Generate static site
-npm run postinstall  # Run nuxt prepare (auto-runs after install)
+
+# Database
+npm run db:migrate   # Push schema to Neon (drizzle-kit push)
+
+# Type Checking (Nuxt includes TS in build process)
+# No explicit type-check script - run build to check
 ```
-
-## Type Checking
-
-Nuxt 3 includes TypeScript support. Type checking is integrated into the build process. No explicit type-check script is defined in package.json.
-
-## Linting & Formatting
-
-**Not configured.** There is no ESLint, Prettier, ruff, or other linting/formatting tools set up. When adding them, use:
-
-- ESLint with Vue/TypeScript support
-- Prettier with Vue and TypeScript plugins
 
 ## Testing
 
-**Not configured.** No test framework (Jest, Vitest, etc.) is set up. When adding tests, use Vitest (native Vite integration with Nuxt 3).
-
-### Scoring & Answer Tracking (Exam Mode)
-
-The app uses a spaced-repetition-inspired scoring system with four difficulty levels. When testing study sessions, verify:
-
-- **Scoring**: Each card answer records difficulty (`'again'`, `'hard'`, `'good'`, `'easy'`) via `nextCard(difficulty)`
-- **Stats**: `getSessionStats()` returns `{ again, hard, good, easy, total }` counts
-- **Score calculation**: `(easy * 4 + good * 3 + hard * 2 + again * 1) / (total * 4) * 100` gives a percentage
-- **Key behaviors to test**:
-  - `startSession(cards)` shuffles and resets state
-  - `nextCard()` records answer, advances index, flips card back
-  - `nextCard()` on last card sets `sessionComplete = true`
-  - `restartSession()` re-shuffles same deck
-  - `resetSession()` clears all state
+**Not configured.** No test framework set up. If adding tests, use Vitest with native Vite integration for Nuxt 3.
 
 ## Code Style Guidelines
 
 ### Vue Components
 
 - Use `<script setup lang="ts">` for all components
-- Single-file component structure: `<template>` → `<script setup>` → `<style scoped>`
+- Structure: `<template>` → `<script setup>` → `<style scoped>`
 - Component names: **PascalCase** (e.g., `CardModal.vue`, `AppButton.vue`)
-- Props definition: Use TypeScript interface with `withDefaults`
+- Props: Use TypeScript interface with `withDefaults`
 
 ```vue
 <script setup lang="ts">
@@ -86,7 +64,7 @@ const emit = defineEmits<{
 ### Import Order
 
 1. Third-party libraries (Vue, Pinia, etc.)
-2. Nuxt auto-imports (`~/composables/*`, `~/stores/*`)
+2. Nuxt auto-imports (`~/composables/*`, `~/stores/*`, `~/types/*`)
 3. Type imports (`import type { Card } from '...'`)
 
 ### Naming Conventions
@@ -95,16 +73,16 @@ const emit = defineEmits<{
 |------------------|-------------------|--------------------------------------|
 | Components       | PascalCase        | `CardModal.vue`                      |
 | Composables      | `use` + PascalCase| `useLocalStorage.ts`, `useStudySession.ts` |
-| Pinia Stores     | `use` + PascalCase| `useDeckStore` (in `deck.ts`)        |
+| Pinia Stores     | `use` + PascalCase| `useDeckStore` (in `stores/deck.ts`) |
 | TypeScript Types | PascalCase        | `Card`, `Deck`, `Props`              |
-| Props            | camelCase         | `modelValue`, `isFlipped`, `showCloseButton` |
-| Events           | camelCase         | `update:modelValue`, `click`, `save`  |
+| Props/Events     | camelCase         | `modelValue`, `isFlipped`            |
+| File names       | kebab-case        | `pet-display.vue`                    |
 
-### TypeScript
+### TypeScript Rules
 
-- Always define types for component props, emits, and store state
-- Use TypeScript interfaces (not type aliases) for object shapes
-- Use strict typing; avoid `any`
+- Define types for all props, emits, and store state
+- Use interfaces (not type aliases) for object shapes
+- Avoid `any` - use strict typing
 - Use optional properties (`?`) for non-required fields
 
 ```typescript
@@ -114,20 +92,12 @@ interface Card {
   back: string
   createdAt: Date
 }
-
-interface Deck {
-  id: string
-  name: string
-  description: string
-  cards: Card[]
-  createdAt: Date
-}
 ```
 
 ### Error Handling
 
 - Wrap localStorage/async operations in try/catch
-- Check for `window` availability before browser APIs
+- Check `window` availability before browser APIs
 - Log errors with `console.error` and descriptive messages
 
 ```typescript
@@ -136,13 +106,9 @@ loadFromStorage() {
     const saved = localStorage.getItem('flashcard-decks')
     if (saved) {
       try {
-        const parsed = JSON.parse(saved)
-        this.decks = parsed.map((deck: any) => ({
-          ...deck,
-          createdAt: new Date(deck.createdAt),
-        }))
+        this.decks = JSON.parse(saved)
       } catch (e) {
-        console.error('Failed to load decks from storage:', e)
+        console.error('Failed to load decks:', e)
       }
     }
   }
@@ -151,12 +117,9 @@ loadFromStorage() {
 
 ### Accessibility
 
-All interactive components must include:
-
-- `role`, `tabindex`, `aria-label` attributes where appropriate
-- `aria-modal="true"` on modals
-- `aria-labelledby` pointing to the title element
-- Keyboard support: Enter, Space for buttons; Escape for modals/overlays
+- Add `role`, `tabindex`, `aria-label` to interactive elements
+- Use `aria-modal="true"` on modals
+- Support keyboard: Enter/Space for buttons, Escape for modals
 
 ```vue
 <div
@@ -171,503 +134,50 @@ All interactive components must include:
 
 ### CSS & Tailwind
 
-- Global base styles and component classes in `assets/css/main.css`
-- Use `@layer components` for reusable component classes (`.btn`, `.card`, `.input`)
-- Use `@layer utilities` for custom utilities
-- Use Tailwind utilities for component styling; add custom classes sparingly
-- Component styles: use `<style scoped>` for component-specific overrides
-- Font size: base is `18px` (senior-friendly design)
-
-```css
-@layer components {
-  .btn {
-    @apply px-6 py-4 rounded-xl font-semibold transition-all;
-  }
-  .card {
-    @apply bg-white rounded-2xl shadow-lg p-8;
-  }
-}
-```
+- Global styles in `assets/css/main.css` using `@layer components`
+- Use Tailwind utilities; custom classes sparingly
+- Component overrides: `<style scoped>`
+- Base font size: `18px` (senior-friendly design)
 
 ## Directory Structure
 
 ```
-assets/css/main.css    # Global styles, Tailwind imports, component classes
-components/            # Vue components (AppButton, Flashcard, Modal, ExamCard, PetDisplay, etc.)
-composables/           # Reusable composition functions (useLocalStorage, useStudySession, useExamSession, useBattleSession)
-i18n/locales/          # i18n translation files (en.json, vi.json, zh.json)
+assets/css/main.css    # Global styles, Tailwind imports
+components/            # Vue components (PascalCase)
+composables/           # Reusable composition functions
+i18n/locales/          # Translation files (en.json, vi.json, zh.json)
 layouts/               # Page layouts (default.vue, landing.vue)
-pages/                 # Route pages (index, profile, stats, onboarding, pet, battle, deck/[id], study/[id], exam/[id])
-server/
-  ├── api/             # API routes (auth, pets, decks, leaderboard)
-  ├── db/              # Drizzle schema and connection
-  └── utils/           # Server utilities (auth helpers)
+pages/                 # Route pages
+server/api/            # Nuxt server routes (auth, pets, decks, leaderboard)
+server/db/             # Drizzle schema and connection
 stores/                # Pinia stores (deck.ts, pet.ts, auth.ts)
-types/                 # TypeScript types (deck.ts, exam.ts, gamification.ts, pet.ts)
-public/data/           # Pre-built deck JSON files (hskDecks.json, toeicDecks.json, generalDecks.json)
-app.vue                # Root app component
-nuxt.config.ts         # Nuxt configuration
-tailwind.config.js     # Tailwind configuration
+types/                 # TypeScript types
+public/data/           # Pre-built deck JSON files
 ```
-
-## Database Schema (Neon PostgreSQL + Drizzle ORM)
-
-### Key Schema Notes
-
-- **`users.id`**: Uses `integer` type in the database (NOT UUID). Manual ID generation required.
-- **Foreign keys**: Related tables (`user_stats`, `food_inventory`, `leaderboard`, `pets`, `decks`, etc.) use `text` type for `user_id` to match users.id.
-- **Primary keys**: Use `uuidv4()` to generate UUIDs (Drizzle `defaultRandom()` not available on primaryKey).
-- **Neon results**: SQL results returned in `.rows` array, not direct array access.
-
-### Schema Files
-
-- `server/db/schema.ts` - All Drizzle table definitions
-- `server/db/index.ts` - Database connection using `drizzle-orm/neon-http`
-
-### Database Tables
-
-| Table | Key Fields | Notes |
-|-------|------------|-------|
-| users | id (int), email, password, name | Manual ID generation |
-| user_stats | user_id (text), totalXP, level, streak | Foreign key as text |
-| food_inventory | user_id (text), basic, premium, rare | |
-| pets | user_id (text), name, species, level, stats | |
-| decks | user_id (text), name, cards[] | |
-| leaderboard | user_id (text), pet stats | |
-| daily_challenges | user_id (text), challenge_id, progress | |
-| battle_history | user_id (text), opponent, result | |
-
-## Backend API
-
-All API routes are in `server/api/` using Nuxt server routes.
-
-### Authentication
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user (manual ID) |
-| POST | `/api/auth/login` | Email/password login |
-| POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/me` | Get current user + stats |
-
-### Pets
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/pets` | Get user's pet |
-| POST | `/api/pets/create` | Create pet with UUID |
-| PUT | `/api/pets/feed` | Feed pet, update stats/XP |
-
-### Decks
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/decks` | List user's decks |
-| POST | `/api/decks` | Create new deck |
-| GET | `/api/decks/:id` | Get deck with cards |
-
-### Leaderboard
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/leaderboard` | Get leaderboard (with AI simulation) |
-
-## Mobile Navigation
-
-### MobileNavbar Component
-
-Fixed bottom navigation bar for mobile users (`components/MobileNavbar.vue`).
-
-**Features:**
-- Fixed position at bottom of screen
-- 5 navigation items: Home, Decks, Study, Pet, Profile
-- Active state indicator (highlighted icon)
-- Mobile-first responsive design (hides on desktop)
-- Touch-friendly large tap targets
-
-**Usage:**
-```vue
-<MobileNavbar />
-```
-
-The navbar is included in `layouts/default.vue`.
-
-## Pet System
-
-The app features a pet ownership system with full customization.
-
-### Pet Display Component (`PetDisplay.vue`)
-
-SVG-based cat with extensive customization:
-
-**Props:**
-```typescript
-interface Props {
-  name?: string
-  level?: number
-  evolutionStage?: 1 | 2 | 3
-  mood?: 'happy' | 'sad' | 'hungry' | 'sleeping' | 'normal'
-  petColor?: string       // Main fur color
-  petAccent?: string      // Secondary color (inner ears, etc.)
-  accessories?: {
-    hat?: string          // CSS color
-    collar?: string        // CSS color
-    bow?: string           // CSS color
-    glasses?: string      // CSS color (border)
-  }
-  size?: 'sm' | 'md' | 'lg'
-  showMoodIndicator?: boolean
-  showLevelBadge?: boolean
-  showName?: boolean
-  animated?: boolean
-}
-```
-
-**Available Colors:**
-- **Fur colors**: 12 options (orange, gray, black, white, brown, cream, calico, etc.)
-- **Accent colors**: 6 options (light pink, peach, lavender, mint, sky blue, coral)
-
-**Mood States:**
-- `normal` - Default happy expression
-- `happy` - Wider pupils, smile, blush marks
-- `sad` - Droopy pupils, frown, tilted head
-- `hungry` - Body shake animation
-- `sleeping` - Closed eyes (curved paths), slow breathing
-
-**Animations:**
-- Body bounce (idle)
-- Tail wag
-- Ear wiggle
-- Head bob
-- Blink cycle
-- Mood-specific animations
-
-**Evolution Visuals:**
-- Stage 1 (Baby): Standard cat
-- Stage 2 (Teen): Star accessory above head
-- Stage 3 (Adult): Wing accessories with flap animation
-
-### CustomizePetModal Component
-
-Modal for customizing pet appearance with live preview.
-
-**Features:**
-- Color pickers for fur and accent colors
-- Accessory toggles (hat, collar, bow, glasses)
-- Color picker for each accessory
-- Real-time preview of changes
-- Save/Cancel buttons
-
-### Pet Types (`types/pet.ts`)
-
-```typescript
-interface Pet {
-  id: string
-  name: string
-  species: 'cat'
-  level: number
-  experience: number
-  evolutionStage: 1 | 2 | 3
-  stats: { attack, defense, health, maxHealth }
-  lastFed: Date | null
-  feedingStreak: number
-  likes: number  // For beauty ranking
-  customization?: PetCustomization
-}
-
-interface PetCustomization {
-  furColor: string
-  accentColor: string
-  accessories: PetAccessories
-}
-
-interface PetAccessories {
-  hat?: string
-  collar?: string
-  bow?: string
-  glasses?: string
-}
-```
-
-### Adopting a Pet
-
-Users adopt a pet by spending 10 basic food. Once adopted, the pet appears at `/pet` and in the navigation header.
-
-```typescript
-// Adopt a starter pet
-petStore.createStarterPet('Whiskers')
-```
-
-### Feeding & Leveling
-
-Feed your pet with food earned from exams. Different food types provide different XP and stat bonuses:
-
-| Food Type | XP | Stat Bonus | Earned From |
-|-----------|-----|------------|-------------|
-| Basic Kibble | +10 | +1 ATK | Exam completion |
-| Premium Fish | +30 | +2 DEF, +1 ATK | 90%+ exam score |
-| Legendary Tuna | +80 | +5 HP, +2 ATK, +2 DEF | 100% exam score |
-
-```typescript
-// Feed pet
-petStore.feedPet('premium')
-```
-
-### Evolution System
-
-Pets evolve through three stages as they level up:
-
-| Stage | Level Range | Visual | Stat Multiplier |
-|-------|-------------|--------|-----------------|
-| Baby | 1-10 | Small orange cat | 1x |
-| Teen | 11-30 | Medium cat with star | 1.5x |
-| Adult | 31-100 | Full cat with wings | 2x |
-
-Evolution triggers automatically at levels 10 and 30 with a celebration animation.
-
-### Battle System
-
-Turn-based battles use quiz questions from your decks. Battle power is calculated from pet stats and user achievements.
-
-**Battle Flow:**
-1. Select difficulty (Easy/Medium/Hard)
-2. Choose opponent
-3. Each turn: See question → Select answer → Pet attacks
-4. **Correct answer**: Increases critical streak, boosting damage
-5. **Wrong answer**: Pet attacks with normal damage, streak resets
-6. Battle ends when HP reaches 0 or max turns (10) reached
-
-**Battle Power Formula:**
-```
-petPower = (level * 2) + (attack * 0.5) + (defense * 0.3) + studyBonus
-studyBonus = totalCardsStudied * 0.1 + perfectExams * 5 + streak * 2
-```
-
-**Rewards:**
-- Win: XP + food (based on difficulty)
-- Draw: Partial XP
-- Lose: No rewards
-
-```typescript
-// Start battle
-const session = useBattleSession()
-session.startBattle(opponent)
-
-// Submit answer
-session.submitAnswer(selectedOption)
-session.executePlayerAttack()
-```
-
-### Food Inventory
-
-Food is automatically awarded when completing exams:
-- Base: +5 basic food
-- 90%+ score: +8 premium food
-- 100% score: +15 rare food
-
-Max inventory capacity: 100 (can be upgraded later)
-
-### Components
-
-| Component | Purpose |
-|-----------|---------|
-| `PetDisplay.vue` | SVG cat with evolution stages, moods, animations |
-| `PetStats.vue` | ATK/DEF/HP bars and power display |
-| `FoodInventory.vue` | Food counts with feeding UI |
-| `FeedPetModal.vue` | Select food to feed pet |
-| `EvolutionModal.vue` | Evolution celebration animation |
-| `CustomizePetModal.vue` | Pet color and accessory customization |
-| `MobileNavbar.vue` | Mobile bottom navigation bar |
-| `BattleArena.vue` | Main battle UI with HP bars |
-| `BattleLog.vue` | Battle history entries |
-| `PetLeaderboardMini.vue` | Top 3 pets display for /pet page |
-| `PetLeaderboardFull.vue` | Full leaderboard with category tabs |
-
-## Pet Leaderboard System
-
-The pet leaderboard allows players to compare their pets with others using multiple ranking categories.
-
-**Ranking Categories:**
-| Category | Sort By | Description |
-|----------|---------|-------------|
-| Level | Level DESC | Highest pet level |
-| Power | Power DESC | Combat strength (calculated) |
-| Defense | Defense DESC | Defensive stats |
-| Health | Health DESC | Maximum HP |
-| Beauty | Evolution > Likes DESC | Based on evolution stage and user likes |
-
-**Power Calculation:**
-```
-power = (level * 2 + attack * 0.5 + defense * 0.3 + studyBonus) * evolutionMultiplier
-```
-
-**AI Simulation:**
-- 20 AI pets generated with fake data on each session
-- Names: "Shadow Fang", "Fire Claw", "Ice Whisker", etc.
-- Levels: 5-80 (random)
-- Toggle on/off in `/settings` page
-- Leaderboard regenerates each session (no persistence)
-
-**Components:**
-- `PetLeaderboardMini.vue` - Shows top 3 pets on `/pet` page
-- `PetLeaderboardFull.vue` - Full table with category tabs on `/leaderboard` page
-
-## Layouts
-
-| Layout | Used By | Description |
-|--------|---------|-------------|
-| `default.vue` | All pages except landing | App header with FlashLearn logo, navigation, XP bar, streak badge, MobileNavbar |
-| `landing.vue` | `/` | Minimal layout for marketing landing page (no header/footer) |
-
-## Pages
-
-| Page | Route | Description |
-|------|-------|-------------|
-| Landing | `/` | Marketing landing page with login/register (shows profile for logged-in users) |
-| Profile | `/profile` | User dashboard with stats bar, daily challenges, deck browsing |
-| Stats | `/stats` | User profile with Chart.js progress charts, badges, exam history |
-| Onboarding | `/onboarding` | 5-step tutorial with skip button for new users |
-| Deck Detail | `/deck/[id]` | View deck, add/edit cards, start study or exam |
-| Study | `/study/[id]` | Flashcard study mode with flip interaction |
-| Exam | `/exam/[id]` | Timed exam with input or multiple-choice questions |
-| Pet | `/pet` | Pet management, feeding, customization, evolution |
-| Battle | `/battle` | PvE battle arena with quiz-based combat |
-| Leaderboard | `/leaderboard` | Full pet leaderboard with multiple ranking categories |
-| Settings | `/settings` | App settings including simulation toggle for AI pets |
-
-## Gamification System
-
-### XP & Leveling
-
-The app features an XP-based leveling system where users earn XP through:
-- **Study sessions**: Completing study cards
-- **Exams**: Base XP (50) + score bonus
-- **Daily challenges**: Completing challenges for bonus XP
-- **Badges**: Unlocking achievements for bonus XP
-
-```typescript
-// Level calculation (exponential growth)
-calculateLevel(totalXP: number): number
-calculateXPForLevel(level: number): number // level * 100 + level^2 * 10
-
-// XP for next level
-getXPForNextLevel(currentXP): { current, required, progress }
-
-// Streak multiplier (max 2x at 10-day streak)
-getStreakMultiplier(streak: number): number // min(1 + streak * 0.1, 2.0)
-```
-
-### Badges & Achievements
-
-All badges defined in `types/gamification.ts`:
-
-| Badge ID | Name | Category | XP Reward |
-|----------|------|----------|-----------|
-| first-steps | First Steps | milestone | 50 |
-| streak-3 | Streak Starter | streak | 100 |
-| streak-7 | Week Warrior | streak | 250 |
-| streak-30 | Month Master | streak | 1000 |
-| perfect-score | Perfect Score | exam | 200 |
-| speed-demon | Speed Demon | exam | 100 |
-| card-collector | Card Collector | study | 100 |
-| deck-builder | Deck Builder | study | 200 |
-| hsk-beginner | HSK Beginner | milestone | 300 |
-| toeic-prep | TOEIC Prep | milestone | 300 |
-| century | Century | study | 150 |
-| marathon | Marathon | study | 500 |
-| perfectionist | Perfectionist | exam | 500 |
-| night-owl | Night Owl | social | 50 |
-| early-bird | Early Bird | social | 50 |
-| level-10 | Rising Star | milestone | 200 |
-| level-25 | Dedicated Learner | milestone | 500 |
-| level-50 | Expert | milestone | 1000 |
-
-### Daily Challenges
-
-Daily challenges are auto-generated each day from challenge templates. Progress is tracked and XP awarded upon completion.
-
-```typescript
-// Challenge templates
-const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
-  { id: 'daily-cards-10', type: 'cards', title: 'Quick Study', target: 10, xpReward: 30 },
-  { id: 'daily-cards-30', type: 'cards', title: 'Card Champion', target: 30, xpReward: 75 },
-  { id: 'daily-study-1', type: 'study', title: 'First Steps', target: 1, xpReward: 50 },
-  { id: 'daily-exam-1', type: 'exam', title: 'Exam Ready', target: 1, xpReward: 100 },
-  { id: 'weekly-cards-100', type: 'cards', title: 'Weekly Warrior', target: 100, xpReward: 200 },
-]
-```
-
-### Pre-built Decks
-
-Pre-built decks are loaded from JSON files in `public/data/`:
-
-- `hskDecks.json` - HSK Chinese vocabulary (5 decks)
-- `toeicDecks.json` - TOEIC English vocabulary (5 decks)
-- `generalDecks.json` - General knowledge (3 decks)
-
-Decks are **updatatable**: When JSON version changes, new cards are added to existing decks without duplicates.
-
-```typescript
-// Load pre-built decks
-await deckStore.loadPrebuiltDecks()
-
-// Check for updates
-if (existingDeck.version !== data.version) {
-  // Add new cards that don't exist in current deck
-}
-```
-
-### Onboarding
-
-New users see a 5-step onboarding tutorial:
-1. Welcome to Learn by Game
-2. Study with Flashcards
-3. Take Timed Exams
-4. Earn XP & Badges
-5. You're All Set!
-
-Users can skip via "Skip" button. Skip status stored in `userStats.onboardingCompleted`.
 
 ## Key Patterns
 
-- **State management**: Pinia stores for global state; composables for reusable logic
-- **Persistence**: 
-  - Client: localStorage via composables (`useLocalStorage`), stores handle their own persistence
-  - Server: Neon PostgreSQL with Drizzle ORM
-- **Reactivity**: Vue 3 Composition API (`ref`, `reactive`, `computed`)
-- **Study flow**: Create deck → Add cards → Study mode with flip interaction
-- **Exam flow**: Create deck → Add cards → Exam mode with text input, timed answers, leaderboard tracking
-- **Design**: Senior-friendly UX with large fonts (18px base), high contrast, clear navigation
-- **Mobile-first**: Fixed bottom navigation for mobile users, responsive design
+### Pinia Stores
 
-### Exam Feature
+- Use Options API style (`state`, `getters`, `actions`)
+- Handle localStorage persistence in store actions
+- Export types for external use
 
-The exam feature (`useExamSession`, `pages/exam/[id].vue`) provides:
+### Composables
 
-- **Timed quizzes**: 30 seconds per card (configurable)
-- **Two answer types**: User chooses before starting the exam:
-  - **Type Answer**: Fill-in-the-blank with text input, compared case-insensitively
-  - **Multiple Choice**: Pick from 4 options (A, B, C, D), options auto-generated from other cards' answers
-- **Results-first flow**: Answer is recorded silently, user clicks "Submit & Next" to proceed
-- **Answer tracking**: Visual dots show progress (green=correct, red=incorrect, gray=pending)
-- **Results page**: Shown only after all questions answered, with full score breakdown
-- **Auto-submit**: When timer runs out, empty answer submitted
-- **Grading**: A (>=90%), B (>=80%), C (>=70%), D (>=60%), F (<60%)
-- **Leaderboard**: Tracks best score, attempts, and history per deck
+- Return reactive state and functions
+- No side effects at module level (except config)
 
-```typescript
-// Answer comparison (case-insensitive, trimmed)
-normalizeAnswer('  Hello World  ') === normalizeAnswer('hello world') // true
+### Database Notes
 
-// Score calculation
-score = (correct / total) * 100
+- `users.id`: Integer type, manual ID generation
+- Foreign keys: `text` type for `user_id`
+- Primary keys: Use `uuidv4()` for UUIDs
+- Neon results: Access via `.rows` array
 
-// Grade thresholds
-A >= 90%, B >= 80%, C >= 70%, D >= 60%, F < 60%
+### API Routes
 
-// ExamQuestionType
-type ExamQuestionType = 'input' | 'multiple-choice'
-
-// Generate MC options from deck answers
-generateMultipleChoiceOptions(correctAnswer, allAnswers, currentCardId)
-```
+- Use Nuxt server routes in `server/api/`
+- Auth: `/api/auth/register`, `/api/auth/login`, `/api/auth/me`
+- Pets: `/api/pets`, `/api/pets/create`, `/api/pets/feed`
+- Decks: `/api/decks`, `/api/decks/:id`

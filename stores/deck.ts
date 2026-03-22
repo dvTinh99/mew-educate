@@ -308,64 +308,42 @@ export const useDeckStore = defineStore('deck', {
     },
 
     async loadPrebuiltDecks() {
-      const dataFiles = [
-        '/data/hskDecks.json',
-        '/data/toeicDecks.json',
-        '/data/generalDecks.json'
-      ]
+      try {
+        const response = await $fetch('/api/decks?prebuilt=true')
 
-      for (const file of dataFiles) {
-        try {
-          const response = await fetch(file)
-          if (response.ok) {
-            const data: PrebuiltDataFile = await response.json()
-            
-            for (const deckData of data.decks) {
-              const existingDeck = this.decks.find(d => d.id === deckData.id)
-              if (!existingDeck) {
-                const newDeck: Deck = {
-                  id: deckData.id,
-                  name: deckData.name,
-                  description: deckData.description,
-                  cards: deckData.cards.map(c => ({
-                    id: this.generateId(),
-                    front: c.front,
-                    back: c.back,
-                    hint: c.hint,
-                    reviewCount: 0
-                  })),
-                  createdAt: new Date(),
-                  category: deckData.category,
-                  difficulty: deckData.difficulty,
-                  language: deckData.language,
-                  isPreBuilt: true,
-                  deckIcon: deckData.deckIcon,
-                  tags: deckData.tags,
-                  version: data.version
-                }
-                this.decks.push(newDeck)
-              } else if (existingDeck.version !== data.version) {
-                const existingCardIds = existingDeck.cards.map(c => `${c.front}-${c.back}`)
-                const newCards = deckData.cards
-                  .filter(c => !existingCardIds.includes(`${c.front}-${c.back}`))
-                  .map(c => ({
-                    id: this.generateId(),
-                    front: c.front,
-                    back: c.back,
-                    hint: c.hint,
-                    reviewCount: 0
-                  }))
-                if (newCards.length > 0) {
-                  existingDeck.cards.push(...newCards)
-                }
-                existingDeck.version = data.version
+        console.log('response', response);
+        
+        
+        if (response && response.decks && Array.isArray(response.decks)) {
+          for (const deckData of response.decks) {
+            const existingDeck = this.decks.find(d => d.id === deckData.id)
+            if (!existingDeck) {
+              const newDeck: Deck = {
+                id: deckData.id,
+                name: deckData.name,
+                description: deckData.description || '',
+                cards: (deckData.cards || []).map((c: any) => ({
+                  id: c.id || this.generateId(),
+                  front: c.front,
+                  back: c.back,
+                  hint: c.hint,
+                  reviewCount: c.reviewCount || 0
+                })),
+                createdAt: new Date(deckData.createdAt || Date.now()),
+                category: deckData.category,
+                difficulty: deckData.difficulty,
+                language: deckData.language,
+                isPreBuilt: true,
+                deckIcon: deckData.deckIcon,
+                tags: deckData.tags || [],
+                version: deckData.version
               }
+              this.decks.push(newDeck)
             }
-            this.prebuiltVersion = data.version
           }
-        } catch (e) {
-          console.error(`Failed to load ${file}:`, e)
         }
+      } catch (e) {
+        console.error('Failed to load prebuilt decks from API:', e)
       }
 
       this.saveToStorage()

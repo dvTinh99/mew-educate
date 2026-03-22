@@ -114,5 +114,41 @@
   "footer": {
     "builtWith": "Xây dựng với",
     "techStack": "Nuxt 3 + Vue 3 + Pinia + TailwindCSS"
+  },
+  "pet": {
+    "title": "Thú Cưng",
+    "subtitle": "Chăm sóc thú cưng và làm cho nó mạnh hơn",
+    "backToDecks": "Quay lại Bộ Thẻ",
+    "noPet": "Chưa có Thú Cưng!",
+    "noPetDescription": "Hoàn thành bài kiểm tra và phiên học để kiếm thức ăn và nhận nuôi chú mèo của riêng bạn",
+    "earnFood": "Kiếm Thức Ăn",
+    "adoptPet": "Nhận Nuôi",
+    "battle": "Chiến Đấu!",
+    "adoptCost": "(10 Thức Ăn Cơ Bản)",
+    "currentFood": "Bạn hiện có {count} thức ăn cơ bản",
+    "experience": "Kinh Nghiệm",
+    "toNextLevel": "{xp} XP đến Cấp {level}",
+    "foodInventory": "Kho Thức Ăn",
+    "feed": "Cho {name} ăn",
+    "battleStats": "Chỉ Số Chiến Đấu",
+    "totalBattles": "Tổng Chiến Đấu",
+    "wins": "Thắng",
+    "losses": "Thua",
+    "winRate": "Tỷ Lệ Thắng",
+    "abilityPoints": "Điểm Kỹ Năng",
+    "pointsAvailable": "điểm có sẵn",
+    "allocateHint": "Nhấn để sử dụng điểm:",
+    "levelUp": "Lên cấp để nhận thêm điểm!",
+    "allSpent": "Đã dùng hết điểm!",
+    "resetAt": "Đặt lại ở Cấp {level}",
+    "rename": "Đổi Tên",
+    "customize": "Tùy Chỉnh"
+  },
+  "stats": {
+    "attack": "Tấn Công",
+    "defense": "Phòng Thủ",
+    "health": "Máu",
+    "maxHealth": "Máu Tối Đa",
+    "battlePower": "Sức Mạnh"
   }
 }

@@ -114,5 +114,41 @@
   "footer": {
     "builtWith": "Built with",
     "techStack": "Nuxt 3 + Vue 3 + Pinia + TailwindCSS"
+  },
+  "pet": {
+    "title": "My Pet",
+    "subtitle": "Care for your pet and make it stronger",
+    "backToDecks": "Back to Decks",
+    "noPet": "No Pet Yet!",
+    "noPetDescription": "Complete exams and study sessions to earn food and adopt your very own cat companion",
+    "earnFood": "Earn Food",
+    "adoptPet": "Adopt Pet",
+    "battle": "Battle!",
+    "adoptCost": "(10 Basic Food)",
+    "currentFood": "You currently have {count} basic food",
+    "experience": "Experience",
+    "toNextLevel": "{xp} XP to Level {level}",
+    "foodInventory": "Food Inventory",
+    "feed": "Feed {name}",
+    "battleStats": "Battle Stats",
+    "totalBattles": "Total Battles",
+    "wins": "Wins",
+    "losses": "Losses",
+    "winRate": "Win Rate",
+    "abilityPoints": "Ability Points",
+    "pointsAvailable": "points available",
+    "allocateHint": "Click to spend points:",
+    "levelUp": "Level up to earn more points!",
+    "allSpent": "All points spent!",
+    "resetAt": "Reset at Level {level}",
+    "rename": "Rename",
+    "customize": "Customize Pet"
+  },
+  "stats": {
+    "attack": "Attack",
+    "defense": "Defense",
+    "health": "Health",
+    "maxHealth": "Max Health",
+    "battlePower": "Battle Power"
   }
 }

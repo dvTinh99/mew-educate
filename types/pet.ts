@@ -4,12 +4,19 @@ export type BattleType = 'pve' | 'pvp'
 export type BattleResult = 'win' | 'lose' | 'draw'
 export type BattleDifficulty = 'easy' | 'medium' | 'hard'
 export type LeaderboardCategory = 'level' | 'power' | 'defense' | 'health' | 'beauty'
+export type AbilityStat = 'attack' | 'defense' | 'health'
 
 export interface PetStats {
   attack: number
   defense: number
   health: number
   maxHealth: number
+}
+
+export interface SpentAbilityPoints {
+  attack: number
+  defense: number
+  health: number
 }
 
 export interface Pet {
@@ -20,6 +27,8 @@ export interface Pet {
   experience: number
   evolutionStage: EvolutionStage
   stats: PetStats
+  abilityPoints: number
+  spentAbilityPoints: SpentAbilityPoints
   lastFed: Date | null
   feedingStreak: number
   createdAt: Date
@@ -160,6 +169,29 @@ export const FOOD_TYPES: Record<FoodType, Food> = {
 export const EVOLUTION_THRESHOLDS = {
   stage1To2: 10,
   stage2To3: 30
+}
+
+export const ABILITY_POINTS_PER_LEVEL = 2
+
+export const ABILITY_COSTS: Record<AbilityStat, number> = {
+  attack: 1,
+  defense: 1,
+  health: 1
+}
+
+export const ABILITY_HP_PER_POINT = 2
+
+export const ABILITY_RESET_LEVELS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
+export function canResetAbilityPoints(level: number): boolean {
+  return ABILITY_RESET_LEVELS.includes(level)
+}
+
+export function getAbilityPointDisplay(stat: AbilityStat, points: number): string {
+  if (stat === 'health') {
+    return `+${points * ABILITY_HP_PER_POINT} HP`
+  }
+  return `+${points}`
 }
 
 export const STAT_MULTIPLIERS: Record<EvolutionStage, number> = {

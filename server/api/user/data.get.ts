@@ -166,6 +166,8 @@ export default defineEventHandler(async (event) => {
         experience: pet.experience,
         evolutionStage: pet.evolutionStage,
         stats: pet.stats,
+        abilityPoints: pet.abilityPoints,
+        spentAbilityPoints: pet.spentAbilityPoints,
         lastFed: pet.lastFed,
         feedingStreak: pet.feedingStreak,
         likes: pet.likes,

@@ -9,10 +9,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Decks
+          {{ $t('pet.backToDecks') }}
         </button>
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">My Pet</h1>
-        <p class="text-xl text-gray-600">Care for your pet and make it stronger</p>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ $t('pet.title') }}</h1>
+        <p class="text-xl text-gray-600">{{ $t('pet.subtitle') }}</p>
       </div>
 
       <PetLeaderboardMini class="mb-8" />
@@ -21,25 +21,25 @@
         <div class="w-32 h-32 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center mx-auto mb-6">
           <span class="text-6xl">🐱</span>
         </div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">No Pet Yet!</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ $t('pet.noPet') }}</h2>
         <p class="text-lg text-gray-600 mb-8">
-          Complete exams and study sessions to earn food and adopt your very own cat companion
+          {{ $t('pet.noPetDescription') }}
         </p>
         <div class="flex flex-col gap-4">
           <div class="flex items-center justify-center gap-4 text-gray-700">
             <div class="flex items-center gap-2">
               <span>🍖</span>
-              <span>Earn Food</span>
+              <span>{{ $t('pet.earnFood') }}</span>
             </div>
             <span class="text-gray-400">→</span>
             <div class="flex items-center gap-2">
               <span>🐱</span>
-              <span>Adopt Pet</span>
+              <span>{{ $t('pet.adoptPet') }}</span>
             </div>
             <span class="text-gray-400">→</span>
             <div class="flex items-center gap-2">
               <span>⚔️</span>
-              <span>BATTLE!</span>
+              <span>{{ $t('pet.battle') }}</span>
             </div>
           </div>
           <AppButton 
@@ -49,11 +49,11 @@
             @click="adoptPet"
           >
             <span class="text-xl px-8 py-4">
-              Adopt Pet (10 Basic Food)
+              {{ $t('pet.adoptPet') }} {{ $t('pet.adoptCost') }}
             </span>
           </AppButton>
           <p class="text-sm text-gray-500">
-            You currently have {{ petStore.foodInventory.basic }} basic food
+            {{ $t('pet.currentFood', { count: petStore.foodInventory.basic }) }}
           </p>
         </div>
       </div>
@@ -132,7 +132,7 @@
               <div class="flex-1 space-y-6">
                 <div class="xp-section">
                   <div class="flex justify-between items-center mb-2">
-                    <span class="text-lg font-semibold text-gray-700">Experience</span>
+                    <span class="text-lg font-semibold text-gray-700">{{ $t('pet.experience') }}</span>
                     <span class="text-lg font-bold text-primary-600">
                       {{ pet.experience }} / {{ xpRequired }} XP
                     </span>
@@ -144,7 +144,7 @@
                     ></div>
                   </div>
                   <p class="text-sm text-gray-500 mt-1">
-                    {{ xpToNextLevel }} XP to Level {{ pet.level + 1 }}
+                    {{ $t('pet.toNextLevel', { xp: xpToNextLevel, level: pet.level + 1 }) }}
                   </p>
                 </div>
 
@@ -153,12 +153,22 @@
                   :power="petStore.petPower"
                   :show-power="true"
                 />
+
+                <AbilityPointAllocator
+                  :available-points="pet.abilityPoints"
+                  :spent-points="pet.spentAbilityPoints"
+                  :can-reset="canResetAtLevel"
+                  :reset-level="nextResetLevel"
+                  class="mt-6"
+                  @allocate="handleAllocateAbility"
+                  @reset="handleResetAbility"
+                />
               </div>
             </div>
           </div>
 
           <div class="card p-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Food Inventory</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ $t('pet.foodInventory') }}</h2>
             <FoodInventory
               :inventory="petStore.foodInventory"
               :max-capacity="petStore.maxFoodCapacity"
@@ -174,23 +184,23 @@
               <svg class="w-6 h-6 text-warning-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
-              Battle Stats
+              {{ $t('pet.battleStats') }}
             </h3>
             <div class="space-y-4">
               <div class="flex justify-between items-center">
-                <span class="text-gray-600">Total Battles</span>
+                <span class="text-gray-600">{{ $t('pet.totalBattles') }}</span>
                 <span class="font-bold text-gray-900">{{ petStore.battleHistory.length }}</span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-gray-600">Wins</span>
+                <span class="text-gray-600">{{ $t('pet.wins') }}</span>
                 <span class="font-bold text-success-600">{{ petStore.battleWins }}</span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-gray-600">Losses</span>
+                <span class="text-gray-600">{{ $t('pet.losses') }}</span>
                 <span class="font-bold text-danger-600">{{ petStore.battleLosses }}</span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-gray-600">Win Rate</span>
+                <span class="text-gray-600">{{ $t('pet.winRate') }}</span>
                 <span class="font-bold text-primary-600">{{ petStore.winRate }}%</span>
               </div>
             </div>
@@ -206,7 +216,7 @@
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               </svg>
-              Enter Battle Arena
+              {{ $t('landing.battles.title') }}
             </span>
           </AppButton>
 
@@ -272,10 +282,11 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePetStore } from '~/stores/pet'
-import { getXPForNextLevel, type EvolutionStage, type PetCustomization } from '~/types/pet'
+import { getXPForNextLevel, type EvolutionStage, type PetCustomization, type AbilityStat, canResetAbilityPoints, ABILITY_RESET_LEVELS } from '~/types/pet'
 import PetDisplay from '~/components/PetDisplay.vue'
 import PetStats from '~/components/PetStats.vue'
 import FoodInventory from '~/components/FoodInventory.vue'
+import AbilityPointAllocator from '~/components/AbilityPointAllocator.vue'
 import EvolutionModal from '~/components/EvolutionModal.vue'
 import CustomizePetModal from '~/components/CustomizePetModal.vue'
 import AppButton from '~/components/AppButton.vue'
@@ -316,6 +327,28 @@ const xpProgressPercent = computed(() => {
 const xpToNextLevel = computed(() => {
   return xpRequired.value - (pet.value?.experience ?? 0)
 })
+
+const nextResetLevel = computed(() => {
+  if (!pet.value) return 10
+  const level = pet.value.level
+  for (const resetLevel of ABILITY_RESET_LEVELS) {
+    if (resetLevel > level) return resetLevel
+  }
+  return ABILITY_RESET_LEVELS[ABILITY_RESET_LEVELS.length - 1]
+})
+
+const canResetAtLevel = computed(() => {
+  if (!pet.value) return false
+  return petStore.canResetAbilityPoints()
+})
+
+const handleAllocateAbility = (stat: AbilityStat) => {
+  petStore.allocateAbilityPoint(stat)
+}
+
+const handleResetAbility = () => {
+  petStore.resetAbilityPoints()
+}
 
 const adoptPet = () => {
   if (petStore.foodInventory.basic >= 10) {

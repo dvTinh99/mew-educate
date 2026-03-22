@@ -164,6 +164,12 @@ export const pets = pgTable('pets', {
     health: number
     maxHealth: number
   }>().default({ attack: 10, defense: 10, health: 100, maxHealth: 100 }).notNull(),
+  abilityPoints: integer('ability_points').default(0).notNull(),
+  spentAbilityPoints: jsonb('spent_ability_points').$type<{
+    attack: number
+    defense: number
+    health: number
+  }>().default({ attack: 0, defense: 0, health: 0 }).notNull(),
   lastFed: timestamp('last_fed', { withTimezone: true }),
   feedingStreak: integer('feeding_streak').default(0).notNull(),
   likes: integer('likes').default(0).notNull(),

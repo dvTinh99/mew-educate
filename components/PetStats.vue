@@ -8,7 +8,7 @@
       </div>
       <div class="stat-info">
         <div class="stat-header">
-          <span class="stat-label">Attack</span>
+          <span class="stat-label">{{ $t('stats.attack') }}</span>
           <span class="stat-value">{{ stats.attack }}</span>
         </div>
         <div class="stat-bar-bg">
@@ -25,7 +25,7 @@
       </div>
       <div class="stat-info">
         <div class="stat-header">
-          <span class="stat-label">Defense</span>
+          <span class="stat-label">{{ $t('stats.defense') }}</span>
           <span class="stat-value">{{ stats.defense }}</span>
         </div>
         <div class="stat-bar-bg">
@@ -42,7 +42,7 @@
       </div>
       <div class="stat-info">
         <div class="stat-header">
-          <span class="stat-label">Health</span>
+          <span class="stat-label">{{ $t('stats.health') }}</span>
           <span class="stat-value">{{ stats.health }}/{{ stats.maxHealth }}</span>
         </div>
         <div class="stat-bar-bg">
@@ -52,7 +52,7 @@
     </div>
 
     <div v-if="showPower" class="power-row">
-      <span class="power-label">Battle Power</span>
+      <span class="power-label">{{ $t('stats.battlePower') }}</span>
       <span class="power-value">{{ power }}</span>
     </div>
   </div>

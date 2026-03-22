@@ -114,5 +114,41 @@
   "footer": {
     "builtWith": "使用以下技术构建",
     "techStack": "Nuxt 3 + Vue 3 + Pinia + TailwindCSS"
+  },
+  "pet": {
+    "title": "我的宠物",
+    "subtitle": "照顾您的宠物让它变得更强",
+    "backToDecks": "返回卡组",
+    "noPet": "还没有宠物！",
+    "noPetDescription": "完成考试和学习会话以获得食物并领养您自己的猫咪伙伴",
+    "earnFood": "获取食物",
+    "adoptPet": "领养宠物",
+    "battle": "战斗！",
+    "adoptCost": "(10个基础食物)",
+    "currentFood": "您目前有 {count} 个基础食物",
+    "experience": "经验",
+    "toNextLevel": "{xp} XP 到 {level}级",
+    "foodInventory": "食物背包",
+    "feed": "喂 {name}",
+    "battleStats": "战斗属性",
+    "totalBattles": "总战斗",
+    "wins": "胜利",
+    "losses": "失败",
+    "winRate": "胜率",
+    "abilityPoints": "技能点",
+    "pointsAvailable": "可用点数",
+    "allocateHint": "点击分配点数：",
+    "levelUp": "升级以获得更多点数！",
+    "allSpent": "已用完所有点数！",
+    "resetAt": "在{level}级重置",
+    "rename": "改名",
+    "customize": "自定义"
+  },
+  "stats": {
+    "attack": "攻击",
+    "defense": "防御",
+    "health": "生命",
+    "maxHealth": "最大生命",
+    "battlePower": "战斗力"
   }
 }

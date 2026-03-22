@@ -1,7 +1,7 @@
 <template>
   <div class="food-inventory">
     <div class="inventory-header">
-      <h3 class="text-lg font-bold text-gray-900">Food Inventory</h3>
+      <h3 class="text-lg font-bold text-gray-900">{{ $t('pet.foodInventory') }}</h3>
       <span class="text-sm text-gray-600">
         {{ totalFood }} / {{ maxCapacity }}
       </span>

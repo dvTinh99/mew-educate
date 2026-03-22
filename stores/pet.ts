@@ -10,13 +10,19 @@ import {
   type PetLeaderboardEntry,
   type LeaderboardCategory,
   type LeaderboardSettings,
+  type AbilityStat,
+  type SpentAbilityPoints,
   FOOD_TYPES,
   EVOLUTION_THRESHOLDS,
   calculateEvolutionStage,
   getXPForNextLevel,
   calculatePetPower,
   getFoodRewardForExam,
-  STAT_MULTIPLIERS
+  STAT_MULTIPLIERS,
+  ABILITY_POINTS_PER_LEVEL,
+  ABILITY_COSTS,
+  ABILITY_HP_PER_POINT,
+  canResetAbilityPoints
 } from '~/types/pet'
 import { useDeckStore } from '~/stores/deck'
 
@@ -246,6 +252,12 @@ export const usePetStore = defineStore('pet', {
           health: 100,
           maxHealth: 100
         },
+        abilityPoints: 0,
+        spentAbilityPoints: {
+          attack: 0,
+          defense: 0,
+          health: 0
+        },
         lastFed: null,
         feedingStreak: 0,
         createdAt: new Date(),
@@ -277,29 +289,15 @@ export const usePetStore = defineStore('pet', {
       
       const previousLevel = this.pet.level
       const previousStage = this.pet.evolutionStage
+      let levelsGained = 0
 
       this.pet.experience += food.xpValue
-
-      if (food.statBonus) {
-        if (food.statBonus.attack) {
-          this.pet.stats.attack += food.statBonus.attack
-        }
-        if (food.statBonus.defense) {
-          this.pet.stats.defense += food.statBonus.defense
-        }
-        if (food.statBonus.health) {
-          this.pet.stats.maxHealth += food.statBonus.health
-          this.pet.stats.health = this.pet.stats.maxHealth
-        }
-      }
 
       while (this.pet.experience >= getXPForNextLevel(this.pet.level)) {
         this.pet.experience -= getXPForNextLevel(this.pet.level)
         this.pet.level++
-        this.pet.stats.attack += 2
-        this.pet.stats.defense += 1
-        this.pet.stats.maxHealth += 10
-        this.pet.stats.health = this.pet.stats.maxHealth
+        levelsGained++
+        this.pet.abilityPoints += ABILITY_POINTS_PER_LEVEL
       }
 
       this.pet.evolutionStage = calculateEvolutionStage(this.pet.level)
@@ -319,14 +317,67 @@ export const usePetStore = defineStore('pet', {
 
       if (this.pet.evolutionStage > previousStage) {
         this.hasSeenEvolution = false
-        return { leveled: true, evolved: true, newStage: this.pet.evolutionStage }
+        return { leveled: levelsGained > 0, evolved: true, newStage: this.pet.evolutionStage, abilityPointsEarned: levelsGained * ABILITY_POINTS_PER_LEVEL }
       }
 
-      if (this.pet.level > previousLevel) {
-        return { leveled: true, evolved: false }
+      if (levelsGained > 0) {
+        return { leveled: true, evolved: false, abilityPointsEarned: levelsGained * ABILITY_POINTS_PER_LEVEL }
       }
 
-      return { leveled: false, evolved: false }
+      return { leveled: false, evolved: false, abilityPointsEarned: 0 }
+    },
+
+    allocateAbilityPoint(stat: AbilityStat): boolean {
+      if (!this.pet) return false
+      if (this.pet.abilityPoints < ABILITY_COSTS[stat]) return false
+
+      this.pet.abilityPoints -= ABILITY_COSTS[stat]
+      this.pet.spentAbilityPoints[stat]++
+
+      if (stat === 'attack') {
+        this.pet.stats.attack++
+      } else if (stat === 'defense') {
+        this.pet.stats.defense++
+      } else if (stat === 'health') {
+        this.pet.stats.maxHealth += ABILITY_HP_PER_POINT
+        this.pet.stats.health = this.pet.stats.maxHealth
+      }
+
+      this.saveToStorage()
+      return true
+    },
+
+    resetAbilityPoints(): boolean {
+      if (!this.pet) return false
+      if (!canResetAbilityPoints(this.pet.level)) return false
+      if (this.pet.abilityPoints > 0) return false
+
+      const totalSpent = this.pet.spentAbilityPoints.attack 
+        + this.pet.spentAbilityPoints.defense 
+        + this.pet.spentAbilityPoints.health
+
+      this.pet.stats.attack -= this.pet.spentAbilityPoints.attack
+      this.pet.stats.defense -= this.pet.spentAbilityPoints.defense
+      this.pet.stats.maxHealth -= this.pet.spentAbilityPoints.health * ABILITY_HP_PER_POINT
+      this.pet.stats.maxHealth = Math.max(this.pet.stats.maxHealth, 1)
+      this.pet.stats.health = Math.min(this.pet.stats.health, this.pet.stats.maxHealth)
+
+      this.pet.abilityPoints = totalSpent
+      this.pet.spentAbilityPoints = { attack: 0, defense: 0, health: 0 }
+
+      this.saveToStorage()
+      return true
+    },
+
+    canResetAbilityPoints(): boolean {
+      if (!this.pet) return false
+      if (!canResetAbilityPoints(this.pet.level)) return false
+      if (this.pet.abilityPoints > 0) return false
+      
+      const totalSpent = this.pet.spentAbilityPoints.attack 
+        + this.pet.spentAbilityPoints.defense 
+        + this.pet.spentAbilityPoints.health
+      return totalSpent > 0
     },
 
     addFood(type: FoodType, amount: number = 1) {

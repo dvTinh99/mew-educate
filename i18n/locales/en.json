@@ -89,7 +89,9 @@
       "password": "Password",
       "submit": "Login",
       "noAccount": "Don't have an account?",
-      "registerLink": "Register here"
+      "registerLink": "Register here",
+      "google": "Continue with Google",
+      "or": "or"
     },
     "register": {
       "title": "Create Account",

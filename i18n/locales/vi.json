@@ -89,7 +89,9 @@
       "password": "Mật khẩu",
       "submit": "Đăng nhập",
       "noAccount": "Chưa có tài khoản?",
-      "registerLink": "Đăng ký ngay"
+      "registerLink": "Đăng ký ngay",
+      "google": "Tiếp Tục với Google",
+      "or": "hoặc"
     },
     "register": {
       "title": "Tạo Tài Khoản",

@@ -89,7 +89,9 @@
       "password": "密码",
       "submit": "登录",
       "noAccount": "还没有账户？",
-      "registerLink": "立即注册"
+      "registerLink": "立即注册",
+      "google": "使用 Google 登录",
+      "or": "或"
     },
     "register": {
       "title": "创建账户",

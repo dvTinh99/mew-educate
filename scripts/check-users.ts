@@ -21,8 +21,6 @@ async function checkSchema() {
     ORDER BY ordinal_position
   `)
   console.log('Users table columns:')
-  console.log(result.rows)
-  
   await client.end()
 }
 

@@ -168,7 +168,7 @@
     "message": "Message",
     "messagePlaceholder": "Describe your issue or suggestion in detail...",
     "email": "Email",
-    "emailPlaceholder": "your@email.com",
+    "emailPlaceholder": "your email",
     "submit": "Send",
     "submitting": "Sending...",
     "success": "Inquiry sent successfully!",

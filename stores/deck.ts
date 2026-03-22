@@ -365,9 +365,6 @@ export const useDeckStore = defineStore('deck', {
       try {
         const response = await $fetch('/api/decks?prebuilt=true')
 
-        console.log('response', response);
-        
-        
         if (response && response.decks && Array.isArray(response.decks)) {
           for (const deckData of response.decks) {
             const existingDeck = this.decks.find(d => d.id === deckData.id)

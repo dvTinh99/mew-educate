@@ -168,7 +168,7 @@
     "message": "内容",
     "messagePlaceholder": "详细描述您的问题或建议...",
     "email": "邮箱",
-    "emailPlaceholder": "your@email.com",
+    "emailPlaceholder": "your email",
     "submit": "发送",
     "submitting": "发送中...",
     "success": "反馈发送成功！",

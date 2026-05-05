@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
     const userName = name || email.split('@')[0]
 
     const newUser = await db.insert(users).values({
+      id: crypto.randomUUID(),
       email,
       name: userName,
       password: passwordHash,
